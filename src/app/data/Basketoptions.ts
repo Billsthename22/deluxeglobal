@@ -1,0 +1,21 @@
+export const basketOptions = [
+    { id: 1, name: "Purse", price: 12000, image: "/options/purse.jpg" },
+    { id: 2, name: "Glasses", price: 8000, image: "/options/glasses.jpg" },
+    { id: 3, name: "Stanley Cup", price: 25000, image: "/options/stanley.jpg" },
+    { id: 4, name: "Flower Bouquet", price: 18000, image: "/options/flowers.jpg" },
+    { id: 5, name: "Teddy Bear", price: 9000, image: "/options/teddy.jpg" },
+    { id: 6, name: "Bracelets", price: 7000, image: "/options/bracelet.jpg" },
+    { id: 7, name: "Rhode Lip Gloss", price: 15000, image: "/options/rhode.jpg" },
+    { id: 8, name: "Mini Straightener", price: 14000, image: "/options/mini-straightener.jpg" },
+    { id: 9, name: "Nova SX 800Q Straightener", price: 28000, image: "/options/nova.jpg" },
+    { id: 10, name: "2-in-1 Towel", price: 6000, image: "/options/towel.jpg" },
+    { id: 11, name: "Mini Fan", price: 5000, image: "/options/fan.jpg" },
+    { id: 12, name: "Mini Jewellery Box", price: 10000, image: "/options/jewelry-box.jpg" },
+    { id: 13, name: "Journal", price: 4500, image: "/options/journal.jpg" },
+    { id: 14, name: "Love Letter", price: 3000, image: "/options/love-letter.jpg" },
+    { id: 15, name: "Perfume", price: 20000, image: "/options/perfume.jpg" },
+    { id: 16, name: "3-in-1 Influencer LED", price: 22000, image: "/options/led.jpg" },
+    { id: 17, name: "Cluster Lashes", price: 8000, image: "/options/lashes.jpg" },
+    { id: 18, name: "Customized Charms", price: 6500, image: "/options/charms.jpg" },
+  ];
+  

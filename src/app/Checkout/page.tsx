@@ -50,7 +50,7 @@ export default function CheckoutPage() {
         
         {/* LEFT COLUMN: ORDER SUMMARY */}
         <div className="space-y-6">
-          <Link href="/build" className="text-pink-500 font-bold flex items-center gap-2 hover:underline">
+          <Link href="/Build" className="text-pink-500 font-bold flex items-center gap-2 hover:underline">
             <FaArrowLeft /> Edit Your Selection
           </Link>
           

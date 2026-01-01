@@ -8,12 +8,12 @@ import { useRouter } from "next/navigation";
 type Item = { id: number; name: string; image: string };
 
 const items: Item[] = [
-  { id: 1, name: "Purse", image: "/items/purse.jpg" },
+  { id: 1, name: "Branded Purse", image: "/items/purse.jpg" },
   { id: 2, name: "Glasses", image: "/items/glasses.jpg" },
   { id: 3, name: "Stanley Cup", image: "/items/stanleycup.jpg" },
   { id: 4, name: "Flower Bouquet", image: "/items/flowers.jpg" },
   { id: 5, name: "Teddy Bear", image: "/items/teddy.jpg" },
-  { id: 6, name: "Bracelets", image: "/items/bracelets.jpg" },
+  { id: 6, name: "Van Cleef Bracelets", image: "/items/bracelets.jpg" },
   { id: 7, name: "Rhode Lip Gloss", image: "/items/lipgloss.jpg" },
   { id: 8, name: "Mini Straightener", image: "/items/ministraightener.jpg" },
   { id: 9, name: "Nova SX 800Q Straightener", image: "/items/straightener.jpg" },

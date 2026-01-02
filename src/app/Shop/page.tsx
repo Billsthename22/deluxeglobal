@@ -65,13 +65,13 @@ export default function ShopPage() {
     localStorage.setItem("selectedGiftBox", pkg.name);
     localStorage.setItem("orderItems", JSON.stringify(formattedItems));
     localStorage.setItem("orderComment", `Ordered ${pkg.name} directly from Shop.`);
-    router.push("/checkout");
+    router.push("/Checkout");
   };
 
   const startCustomBuild = (boxName: string) => {
     localStorage.setItem("selectedGiftBox", boxName);
     localStorage.removeItem("orderItems"); 
-    router.push("/build");
+    router.push("/Build");
   };
 
   return (

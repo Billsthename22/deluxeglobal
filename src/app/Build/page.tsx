@@ -13,7 +13,7 @@ const items: Item[] = [
   { id: 3, name: "Stanley Cup", image: "/items/stanleycup.jpg" },
   { id: 4, name: "Flower Bouquet", image: "/items/flowers.jpg" },
   { id: 5, name: "Teddy Bear", image: "/items/teddy.jpg" },
-  { id: 6, name: "Van Cleef Bracelets", image: "/items/bracelets.jpg" },
+  { id: 6, name: "Van Cleef Bracelets", image: "/items/Vancleef.jpg" },
   { id: 7, name: "Rhode Lip Gloss", image: "/items/lipgloss.jpg" },
   { id: 8, name: "Mini Straightener", image: "/items/ministraightener.jpg" },
   { id: 9, name: "Nova SX 800Q Straightener", image: "/items/straightener.jpg" },
@@ -24,10 +24,9 @@ const items: Item[] = [
   { id: 14, name: "Love Letter", image: "/items/loveletter.jpg" },
   { id: 15, name: "Perfume 3-in-1", image: "/items/perfume.jpg" },
   { id: 16, name: "Influencer LED", image: "/items/led.jpg" },
-  { id: 17, name: "Cluster Lashes", image: "/items/lashes.jpg" },
+  { id: 17, name: "Cluster Lashes", image: "/items/cluster.jpg" },
   { id: 18, name: "Customized Charms", image: "/items/charms.jpg" },
-  { id: 19, name: "Tripod Stand", image: "/items/tripodstand.jpg" },
-  { id: 20, name: "Selfie Stick stand", image: "/items/Selfiestick.jpg" },
+  { id: 19, name: "Selfie Stick stand", image: "/items/Selfiestick.jpg" },
 ];
 
 export default function BuildPageAnimated() {

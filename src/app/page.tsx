@@ -26,7 +26,7 @@ export default function HomePage() {
   const handleContinue = () => {
     if (selectedBox) {
       localStorage.setItem("selectedGiftBox", selectedBox);
-      router.push("/build"); // Ensure this matches your folder name (lowercase 'build' is standard)
+      router.push("/Build"); // Ensure this matches your folder name (lowercase 'build' is standard)
     }
   };
 

@@ -79,7 +79,7 @@ export default function BuildPage() {
 
   const handleFlowerChoice = (roses: number) => {
     if (tempItem) {
-      const newItem = { ...tempItem, name: `${tempItem.name} (${roses} Roses)` };
+      const newItem = { ...tempItem, name: `${tempItem.name} (${roses} Scented Roses)` };
       setSelectedItems([...selectedItems, newItem]);
       setFlowerModalOpen(false);
       setTempItem(null);
@@ -88,7 +88,6 @@ export default function BuildPage() {
 
   const saveLoveLetter = () => {
     if (tempItem && loveLetter.trim()) {
-      // Ensure we don't add duplicate ID if editing
       const filtered = selectedItems.filter(i => i.id !== tempItem.id);
       setSelectedItems([...filtered, tempItem]);
       setLetterModalOpen(false);
@@ -146,6 +145,7 @@ export default function BuildPage() {
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
+        {/* ITEM GRID */}
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((item) => {
             const isSelected = selectedItems.find((i) => i.id === item.id);
@@ -171,6 +171,7 @@ export default function BuildPage() {
           })}
         </div>
 
+        {/* SIDEBAR BASKET */}
         <div className="hidden lg:block w-96 sticky top-10 self-start">
           <div className="bg-white rounded-[3rem] p-8 shadow-2xl border border-pink-100">
             <div id="basket-header" className="flex items-center gap-3 mb-6">
@@ -179,22 +180,26 @@ export default function BuildPage() {
             </div>
 
             <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 mb-6">
-              {selectedItems.map((item, index) => (
-                <div key={`basket-${item.id}-${index}`} className="bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-gray-700 text-sm">{item.name}</span>
-                    <button onClick={() => toggleItem(item)} className="text-red-400 font-black">✕</button>
+              {selectedItems.length === 0 ? (
+                <p className="text-gray-400 font-medium italic text-center py-10">Your basket is empty...</p>
+              ) : (
+                selectedItems.map((item, index) => (
+                  <div key={`basket-${item.id}-${index}`} className="bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-gray-700 text-sm">{item.name}</span>
+                      <button onClick={() => toggleItem(item)} className="text-red-400 font-black">✕</button>
+                    </div>
+                    {(item.id === 13 || item.id === 14) && loveLetter && (
+                      <button 
+                        onClick={() => { setTempItem(item); setLetterModalOpen(true); }}
+                        className="mt-2 text-[10px] text-pink-500 font-bold uppercase flex items-center gap-1 hover:underline"
+                      >
+                        <FaPenNib /> Edit Letter
+                      </button>
+                    )}
                   </div>
-                  {(item.id === 13 || item.id === 14) && loveLetter && (
-                    <button 
-                      onClick={() => { setTempItem(item); setLetterModalOpen(true); }}
-                      className="mt-2 text-[10px] text-pink-500 font-bold uppercase flex items-center gap-1 hover:underline"
-                    >
-                      <FaPenNib /> Edit Letter
-                    </button>
-                  )}
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             <button
@@ -208,35 +213,52 @@ export default function BuildPage() {
         </div>
       </div>
 
+      {/* LOVE LETTER MODAL */}
       {letterModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] flex items-center justify-center p-6">
           <div className="bg-white rounded-[3rem] p-8 md:p-10 max-w-lg w-full shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-pink-100 p-3 rounded-2xl text-pink-500 text-2xl"><FaPenNib /></div>
-              <h2 className="text-2xl font-black text-gray-900 uppercase">Write Your Letter</h2>
-            </div>
+            <h2 className="text-2xl font-black text-gray-900 uppercase mb-4">Write Your Letter</h2>
             <textarea
               value={loveLetter}
               onChange={(e) => setLoveLetter(e.target.value)}
-              placeholder="Start writing your love letter here..."
-              className="w-full bg-pink-50/50 border-2 border-pink-100 rounded-[2rem] p-6 text-gray-800 font-medium outline-none h-64 resize-none transition-all"
+              placeholder="Start writing..."
+              className="w-full bg-pink-50/50 border-2 border-pink-100 rounded-[2rem] p-6 text-gray-800 outline-none h-64 resize-none"
             />
             <div className="flex gap-4 mt-8">
-              <button onClick={() => setLetterModalOpen(false)} className="flex-1 bg-gray-100 py-4 rounded-2xl font-black text-gray-400">CANCEL</button>
+              <button onClick={() => { setLetterModalOpen(false); setTempItem(null); }} className="flex-1 bg-gray-100 py-4 rounded-2xl font-black">CANCEL</button>
               <button onClick={saveLoveLetter} disabled={!loveLetter.trim()} className="flex-2 bg-pink-500 text-white px-8 py-4 rounded-2xl font-black">SAVE LETTER</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* FLOWER MODAL */}
       {flowerModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-6">
-          <div className="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl animate-in zoom-in duration-300 text-center">
+          <div className="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl text-center animate-in zoom-in duration-300">
             <div className="text-5xl mb-4">🌹</div>
-            <h2 className="text-3xl font-black text-gray-900 mb-8">Flower Size</h2>
+            <h2 className="text-3xl font-black text-gray-900 mb-8 tracking-tight">Scented Roses</h2>
             <div className="space-y-4">
-              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 border-2 border-pink-200 p-6 rounded-3xl font-black text-pink-600">15 Roses</button>
-              <button onClick={() => handleFlowerChoice(20)} className="w-full bg-gray-900 p-6 rounded-3xl font-black text-white">20 Roses</button>
+              <button 
+                onClick={() => handleFlowerChoice(15)} 
+                className="w-full bg-pink-50 border-2 border-pink-200 p-6 rounded-3xl font-black text-pink-600 hover:bg-pink-100 transition-colors"
+              >
+                15 Scented Roses
+              </button>
+              <button 
+                onClick={() => handleFlowerChoice(25)} 
+                className="w-full bg-gray-900 p-6 rounded-3xl font-black text-white hover:bg-black transition-colors"
+              >
+                25 Scented Roses
+              </button>
+              
+              {/* CANCEL OPTION */}
+              <button 
+                onClick={() => { setFlowerModalOpen(false); setTempItem(null); }}
+                className="mt-4 w-full text-gray-400 font-black hover:text-red-500 transition-colors py-2 uppercase tracking-widest text-xs"
+              >
+                Cancel Selection
+              </button>
             </div>
           </div>
         </div>

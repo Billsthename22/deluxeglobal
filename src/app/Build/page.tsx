@@ -27,64 +27,92 @@ const items: Item[] = [
   { id: 17, name: "Cluster Lashes", image: "/items/cluster.jpg" },
   { id: 18, name: "Customized Charms", image: "/items/charms.jpg" },
   { id: 19, name: "Selfie Stick stand", image: "/items/Selfiestick.jpg" },
+  { id: 20, name: "Wall LED light", image: "/items/Selfiestick.jpg" },
+  { id: 21, name: "Face Mask", image: "/items/Selfiestick.jpg" },
+  { id: 22, name: "Bloomer Shorts", image: "/items/Selfiestick.jpg" },
+  { id: 23, name: "Money Box", image: "/items/moneybox.jpg" },
 ];
 
-export default function BuildPageAnimated() {
+export default function BuildPage() {
   const router = useRouter();
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [selectedBox, setSelectedBox] = useState<string>("Standard Box");
   const [comment, setComment] = useState("");
   const [isBasketOpen, setBasketOpen] = useState(false);
 
+  // Flower Modal States
+  const [flowerModalOpen, setFlowerModalOpen] = useState(false);
+  const [tempFlowerItem, setTempFlowerItem] = useState<Item | null>(null);
+
   const basketRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     const savedBox = localStorage.getItem("selectedGiftBox");
-    if (savedBox) {
-      setSelectedBox(savedBox);
-    }
+    if (savedBox) setSelectedBox(savedBox);
   }, []);
 
-  const toggleItem = (item: Item, e?: React.MouseEvent<HTMLDivElement>) => {
-    if (e && basketRef.current) {
-      const img = e.currentTarget.querySelector("img") as HTMLImageElement;
+  const toggleItem = (item: Item, e?: React.MouseEvent) => {
+    const isAlreadySelected = selectedItems.find((i) => i.id === item.id || i.name.startsWith(item.name));
+
+    if (isAlreadySelected) {
+      setSelectedItems(selectedItems.filter((i) => i.id !== item.id && !i.name.includes(item.name)));
+      return;
+    }
+
+    // Intercept Flower Bouquet
+    if (item.id === 4) {
+      setTempFlowerItem(item);
+      setFlowerModalOpen(true);
+      return;
+    }
+
+    // Normal Item Addition
+    processAnimation(e);
+    setSelectedItems([...selectedItems, item]);
+  };
+
+  const handleFlowerChoice = (roses: number) => {
+    if (tempFlowerItem) {
+      const newItem = {
+        ...tempFlowerItem,
+        name: `${tempFlowerItem.name} (${roses} Scented Roses)`,
+      };
+      setSelectedItems([...selectedItems, newItem]);
+      setFlowerModalOpen(false);
+      setTempFlowerItem(null);
+    }
+  };
+
+  const processAnimation = (e?: React.MouseEvent) => {
+    if (e && (basketRef.current || window.innerWidth > 1024)) {
+      const target = e.currentTarget as HTMLElement;
+      const img = target.querySelector("img");
       if (img) {
         const clone = img.cloneNode(true) as HTMLImageElement;
         const rect = img.getBoundingClientRect();
-        const basketRect = basketRef.current.getBoundingClientRect();
         
-        Object.assign(clone.style, {
-          position: "fixed",
-          left: `${rect.left}px`,
-          top: `${rect.top}px`,
-          width: `${rect.width}px`,
-          height: `${rect.height}px`,
-          transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-          zIndex: "1000",
-          borderRadius: "50%",
-          pointerEvents: "none"
-        });
+        // Target the floating basket on mobile OR the basket panel on desktop
+        const basketElem = basketRef.current || document.getElementById('basket-header');
+        const basketRect = basketElem?.getBoundingClientRect();
 
-        document.body.appendChild(clone);
-
-        requestAnimationFrame(() => {
+        if (basketRect) {
           Object.assign(clone.style, {
-            left: `${basketRect.left + 10}px`,
-            top: `${basketRect.top + 10}px`,
-            width: "20px",
-            height: "20px",
-            opacity: "0"
+            position: "fixed", left: `${rect.left}px`, top: `${rect.top}px`,
+            width: `${rect.width}px`, height: `${rect.height}px`,
+            transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)", zIndex: "1000",
+            borderRadius: "50%", pointerEvents: "none", opacity: "0.8"
           });
-        });
+          document.body.appendChild(clone);
 
-        clone.addEventListener("transitionend", () => clone.remove());
+          requestAnimationFrame(() => {
+            Object.assign(clone.style, {
+              left: `${basketRect.left + 20}px`, top: `${basketRect.top + 20}px`,
+              width: "20px", height: "20px", opacity: "0", transform: "rotate(360deg)"
+            });
+          });
+          clone.addEventListener("transitionend", () => clone.remove());
+        }
       }
-    }
-
-    if (selectedItems.find((i) => i.id === item.id)) {
-      setSelectedItems(selectedItems.filter((i) => i.id !== item.id));
-    } else {
-      setSelectedItems([...selectedItems, item]);
     }
   };
 
@@ -96,48 +124,40 @@ export default function BuildPageAnimated() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100 p-4 lg:p-8">
+    <main className="min-h-screen bg-pink-50 p-4 lg:p-12 relative">
       
-      {/* HEADER & NAVIGATION */}
-      <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <Link href="/" className="inline-flex items-center text-pink-500 hover:text-pink-600 transition-colors gap-2 text-sm font-bold mb-3 group">
-            <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" /> Back to Box Selection
-          </Link>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-            Curate Your <span className="text-pink-500 italic">Perfect Set</span>
-          </h1>
-          <p className="text-gray-600 font-medium mt-1">
-            Pick your items to fill your <span className="text-pink-600 font-bold underline decoration-pink-200 underline-offset-4">{selectedBox}</span>.
-          </p>
-        </div>
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto mb-10">
+        <Link href="/" className="text-pink-500 font-bold flex items-center gap-2 hover:underline mb-4">
+          <FaArrowLeft /> Change Box Type
+        </Link>
+        <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+          Fill Your <span className="text-pink-500 uppercase">{selectedBox}</span>
+        </h1>
+        <p className="text-gray-500 font-bold mt-2">Tap items to add them to your custom gift set.</p>
       </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
         
         {/* ITEM GRID */}
-        <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((item) => {
-            const isSelected = selectedItems.find((i) => i.id === item.id);
+            const isSelected = selectedItems.find((i) => i.id === item.id || i.name.includes(item.name));
             return (
               <div
                 key={item.id}
                 onClick={(e) => toggleItem(item, e)}
-                className={`group relative cursor-pointer rounded-[2rem] overflow-hidden shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white ${
-                  isSelected ? "ring-4 ring-pink-500 scale-105" : "hover:ring-2 hover:ring-pink-200"
+                className={`group relative cursor-pointer rounded-[2.5rem] overflow-hidden shadow-lg transition-all duration-300 active:scale-95 bg-white border-4 ${
+                  isSelected ? "border-pink-500 scale-105" : "border-white hover:border-pink-100"
                 }`}
               >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-44 sm:h-52 object-cover"
-                />
-                <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-white text-center font-bold text-sm">
-                  {item.name}
+                <img src={item.image} alt={item.name} className="w-full h-48 object-cover" />
+                <div className="p-4 text-center">
+                  <p className="font-black text-gray-800 text-sm leading-tight">{item.name}</p>
                 </div>
                 {isSelected && (
-                  <div className="absolute top-3 right-3 animate-in zoom-in duration-300">
-                    <FaCheckCircle className="text-pink-500 text-3xl drop-shadow-lg" />
+                  <div className="absolute top-4 right-4 bg-pink-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in">
+                    <FaCheckCircle size={20} />
                   </div>
                 )}
               </div>
@@ -145,150 +165,130 @@ export default function BuildPageAnimated() {
           })}
         </div>
 
-        {/* DESKTOP BASKET PANEL */}
-        <div className="hidden lg:flex lg:w-96 sticky top-8 self-start">
-          <BasketPanel
-            selectedBox={selectedBox}
-            selectedItems={selectedItems}
-            comment={comment}
-            setComment={setComment}
-            toggleItem={toggleItem}
-            checkout={handleProceedToCheckout}
-          />
-        </div>
-      </div>
-
-      {/* MOBILE BASKET TRIGGER */}
-      <button
-        ref={basketRef}
-        className="lg:hidden fixed bottom-6 right-6 z-50 bg-pink-500 text-white p-5 rounded-full shadow-2xl flex items-center justify-center hover:bg-pink-600 active:scale-90 transition-all"
-        onClick={() => setBasketOpen(true)}
-      >
-        <FaShoppingBasket size={24} />
-        {selectedItems.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-white text-pink-600 w-6 h-6 text-xs font-black rounded-full flex items-center justify-center border-2 border-pink-500 shadow-sm">
-            {selectedItems.length}
-          </span>
-        )}
-      </button>
-
-      {/* MOBILE OVERLAY BASKET */}
-      {isBasketOpen && (
-        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex justify-end">
-          <div className="w-[85%] max-w-sm bg-white rounded-l-[2.5rem] shadow-2xl p-6 flex flex-col gap-5 overflow-y-auto animate-in slide-in-from-right duration-300">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-black text-pink-600 flex items-center gap-2">
-                <FaShoppingBasket /> Your Basket
-              </h2>
-              <button onClick={() => setBasketOpen(false)} className="text-gray-400 p-2 hover:text-pink-500 transition-colors">
-                <FaTimes size={24} />
-              </button>
+        {/* SIDEBAR BASKET (DESKTOP) */}
+        <div className="hidden lg:block w-96 sticky top-10 self-start">
+          <div className="bg-white rounded-[3rem] p-8 shadow-2xl border border-pink-100">
+            <div id="basket-header" className="flex items-center gap-3 mb-6">
+              <FaShoppingBasket className="text-pink-500 text-2xl" />
+              <h2 className="text-2xl font-black text-gray-900">Your Basket</h2>
             </div>
 
-            <div className="bg-pink-50 p-4 rounded-2xl border border-pink-100 flex items-center gap-4">
-              <div className="bg-white p-2 rounded-xl text-pink-500 shadow-sm">
-                <FaBoxOpen size={24} />
-              </div>
-              <div>
-                <p className="text-[10px] text-pink-400 uppercase font-black tracking-widest mb-1">Packaging</p>
-                <p className="font-bold text-gray-800">{selectedBox}</p>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 mb-6">
               {selectedItems.length === 0 ? (
-                <p className="text-gray-400 text-center py-10 italic">Your basket is empty...</p>
+                <p className="text-gray-400 font-medium italic text-center py-10">Empty basket...</p>
               ) : (
-                <ul className="space-y-3">
-                  {selectedItems.map((item) => (
-                    <li key={item.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
-                      <span className="text-sm font-bold text-gray-700">{item.name}</span>
-                      <button onClick={() => toggleItem(item)} className="text-red-400 p-1 font-bold">✕</button>
-                    </li>
-                  ))}
-                </ul>
+                selectedItems.map((item) => (
+                  <div key={item.id} className="flex justify-between items-center bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
+                    <span className="font-bold text-gray-700 text-sm">{item.name}</span>
+                    <button onClick={() => toggleItem(item)} className="text-red-400 hover:text-red-600 transition-colors font-black">✕</button>
+                  </div>
+                ))
               )}
             </div>
 
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Special instructions or color preferences..."
-              className="w-full border-2 border-gray-100 rounded-2xl p-4 focus:border-pink-300 focus:outline-none resize-none h-28 text-sm text-black transition-all"
+              placeholder="Special instructions (e.g., color preferences)"
+              className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-200 rounded-2xl p-4 text-sm font-bold text-black outline-none h-24 mb-6 transition-all"
             />
 
             <button
               onClick={handleProceedToCheckout}
               disabled={selectedItems.length === 0}
-              className="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 transition-all"
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-pink-100 transition-all active:scale-95 disabled:opacity-30 flex items-center justify-center gap-2"
             >
-              Proceed to Checkout <FaArrowRight size={14} />
+              Checkout <FaArrowRight />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* FLOWER SELECTION MODAL */}
+      {flowerModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-6">
+          <div className="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl animate-in zoom-in duration-300 text-center">
+            <div className="text-5xl mb-4">🌹</div>
+            <h2 className="text-3xl font-black text-gray-900 mb-2">Flower Size</h2>
+            <p className="text-gray-500 font-bold mb-8 text-sm">Select the number of scented roses for your bouquet.</p>
+            
+            <div className="space-y-4">
+              <button 
+                onClick={() => handleFlowerChoice(15)}
+                className="w-full bg-pink-50 hover:bg-pink-100 border-2 border-pink-200 p-6 rounded-3xl transition-all group"
+              >
+                <span className="block text-2xl font-black text-pink-600">15 Roses</span>
+                <span className="text-xs font-black text-pink-300 uppercase tracking-widest">Standard Luxe</span>
+              </button>
+
+              <button 
+                onClick={() => handleFlowerChoice(20)}
+                className="w-full bg-gray-900 hover:bg-black p-6 rounded-3xl transition-all group"
+              >
+                <span className="block text-2xl font-black text-white">20 Roses</span>
+                <span className="text-xs font-black text-gray-500 uppercase tracking-widest">Ultimate Bouquet</span>
+              </button>
+            </div>
+
+            <button 
+              onClick={() => { setFlowerModalOpen(false); setTempFlowerItem(null); }}
+              className="mt-8 text-gray-400 font-black hover:text-red-500 transition-colors"
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE BASKET TRIGGER */}
+      <button
+        ref={basketRef}
+        onClick={() => setBasketOpen(true)}
+        className="lg:hidden fixed bottom-8 right-8 bg-pink-500 text-white w-20 h-20 rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 active:scale-90 transition-all"
+      >
+        <FaShoppingBasket size={30} />
+        {selectedItems.length > 0 && (
+          <span className="absolute -top-2 -right-2 bg-white text-pink-600 w-8 h-8 rounded-full flex items-center justify-center font-black border-4 border-pink-500 shadow-lg text-sm">
+            {selectedItems.length}
+          </span>
+        )}
+      </button>
+
+      {/* MOBILE DRAWER (BASKET) */}
+      {isBasketOpen && (
+        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex justify-end">
+          <div className="w-[85%] bg-white h-full p-8 shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-black text-gray-900">Your Basket</h2>
+              <button onClick={() => setBasketOpen(false)} className="text-gray-400 p-2"><FaTimes size={24}/></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-4 mb-6">
+              {selectedItems.map((item) => (
+                <div key={item.id} className="flex justify-between items-center bg-pink-50 p-4 rounded-2xl">
+                  <span className="font-bold text-gray-800 text-sm">{item.name}</span>
+                  <button onClick={() => toggleItem(item)} className="text-red-400 font-black">✕</button>
+                </div>
+              ))}
+            </div>
+
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Any special requests?"
+              className="w-full bg-gray-50 border-2 border-transparent rounded-2xl p-4 text-sm font-bold text-black mb-6 h-32 outline-none focus:border-pink-200"
+            />
+
+            <button
+              onClick={handleProceedToCheckout}
+              disabled={selectedItems.length === 0}
+              className="w-full bg-pink-500 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-pink-100"
+            >
+              Proceed to Checkout
             </button>
           </div>
         </div>
       )}
     </main>
-  );
-}
-
-function BasketPanel({ selectedBox, selectedItems, comment, setComment, toggleItem, checkout }: any) {
-  return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-8 flex flex-col gap-6 w-full border border-white">
-      <div className="flex items-center gap-3 border-b border-pink-50 pb-5">
-        <FaShoppingBasket className="text-pink-600 text-3xl" />
-        <h2 className="text-2xl font-black text-gray-800 tracking-tight">Basket Summary</h2>
-      </div>
-
-      <div className="bg-gradient-to-br from-pink-50 to-white p-5 rounded-3xl border border-pink-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="bg-white p-3 rounded-2xl shadow-sm text-pink-500">
-            <FaBoxOpen size={24} />
-          </div>
-          <div>
-            <p className="text-[10px] text-pink-400 uppercase font-black tracking-widest leading-none mb-1">Selected Container</p>
-            <p className="font-extrabold text-gray-800 text-lg">{selectedBox}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto max-h-[350px] pr-2 custom-scrollbar">
-        {selectedItems.length === 0 ? (
-          <div className="text-center py-10">
-            <div className="text-pink-200 mb-2 flex justify-center"><FaShoppingBasket size={40} /></div>
-            <p className="text-gray-400 text-sm font-medium">Your basket is empty.</p>
-          </div>
-        ) : (
-          <ul className="space-y-4">
-            {selectedItems.map((item: Item) => (
-              <li key={item.id} className="flex justify-between items-center group animate-in fade-in slide-in-from-right-4 duration-300">
-                <span className="text-gray-700 font-bold group-hover:text-pink-600 transition-colors">{item.name}</span>
-                <button
-                  onClick={() => toggleItem(item)}
-                  className="bg-gray-50 text-gray-300 w-8 h-8 rounded-xl flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all border border-gray-100"
-                >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div className="space-y-4 pt-4 border-t border-pink-50">
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Any special notes for your order?"
-          className="w-full border-2 border-gray-50 bg-gray-50/50 rounded-2xl p-4 focus:bg-white focus:border-pink-200 focus:outline-none transition-all resize-none h-24 text-sm text-black"
-        />
-        <button
-          onClick={checkout}
-          disabled={selectedItems.length === 0}
-          className="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-5 rounded-[1.5rem] font-black tracking-wide text-lg shadow-xl shadow-pink-100 hover:shadow-pink-200 flex items-center justify-center gap-3 disabled:opacity-30 disabled:shadow-none hover:-translate-y-1 transition-all active:translate-y-0"
-        >
-          Proceed to Checkout <FaArrowRight size={18} />
-        </button>
-      </div>
-    </div>
   );
 }

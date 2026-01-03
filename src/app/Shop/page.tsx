@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 const packages = [
   {
     id: "premium-heart",
-    name: "The 100k Heart Collection",
+    name: "The 100k Heart Money Box",
     price: "100,000",
     color: "from-red-400 to-pink-600",
     icon: <FaHeart />,
@@ -32,7 +32,7 @@ const packages = [
   },
   {
     id: "essential-love",
-    name: "The 60k Romance Set",
+    name: "The 60k Heart Box",
     price: "60,000",
     color: "from-pink-400 to-rose-500",
     icon: <FaStar />,

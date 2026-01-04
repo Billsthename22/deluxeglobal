@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation"; 
 import { Great_Vibes, Montserrat, Playfair_Display } from 'next/font/google';
-import { FaTimes, FaArrowRight, FaTruck, FaStar } from "react-icons/fa";
+import { FaTimes, FaArrowRight, FaStar } from "react-icons/fa";
 
 const greatVibes = Great_Vibes({ weight: '400', subsets: ['latin'] });
 const montserrat = Montserrat({ subsets: ['latin'], weight: ['400', '700', '900'] });

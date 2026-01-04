@@ -188,7 +188,7 @@ export default function ValentinesLanding() {
          <div className="w-12 h-12 md:w-16 md:h-16 border-2 border-rose-500 rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-lg shadow-rose-100">
             <span className={`${greatVibes.className} text-rose-500 text-xl md:text-2xl`}>D</span>
          </div>
-         <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.6em] md:tracking-[1.2em] text-gray-400 text-center px-4">Deluxe Global Atelier</p>
+         <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.6em] md:tracking-[1.2em] text-gray-400 text-center px-4">Deluxe Global </p>
       </footer>
     </main>
   );

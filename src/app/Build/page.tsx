@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FaCheckCircle, FaShoppingBasket, FaTimes, FaBoxOpen, FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaCheckCircle, FaShoppingBasket, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -35,38 +35,80 @@ const items: Item[] = [
 
 export default function BuildPage() {
   const router = useRouter();
-  const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Item[]>(() => {
+    if (typeof window === "undefined") return [];
+    const saved = localStorage.getItem("orderItems");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [selectedBox, setSelectedBox] = useState<string>("Standard Box");
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("orderComment") || "";
+  });
   const [isBasketOpen, setBasketOpen] = useState(false);
 
-  // Flower Modal States
   const [flowerModalOpen, setFlowerModalOpen] = useState(false);
   const [tempFlowerItem, setTempFlowerItem] = useState<Item | null>(null);
 
   const basketRef = useRef<HTMLButtonElement | null>(null);
 
+  // ✅ Load saved data from localStorage on mount
   useEffect(() => {
-    const savedBox = localStorage.getItem("selectedGiftBox");
-    if (savedBox) setSelectedBox(savedBox);
+    const savedBox = localStorage.getItem("boxType");
+    const savedItems = localStorage.getItem("orderItems");
+    const savedComment = localStorage.getItem("orderComment");
+
+    if (savedBox) {
+      try {
+        const box = JSON.parse(savedBox);
+        if (box?.name) setSelectedBox(box.name);
+        else setSelectedBox(savedBox);
+      } catch {
+        setSelectedBox(savedBox);
+      }
+    }
+
+    if (savedItems) {
+      try {
+        setSelectedItems(JSON.parse(savedItems));
+      } catch {
+        setSelectedItems([]);
+      }
+    }
+
+    if (savedComment) setComment(savedComment);
   }, []);
 
+  // ✅ Persist selected items, comment, and box to localStorage
+  useEffect(() => {
+    localStorage.setItem("orderItems", JSON.stringify(selectedItems));
+  }, [selectedItems]);
+
+  useEffect(() => {
+    localStorage.setItem("orderComment", comment);
+  }, [comment]);
+
+  useEffect(() => {
+    localStorage.setItem("boxType", JSON.stringify({ name: selectedBox }));
+  }, [selectedBox]);
+
   const toggleItem = (item: Item, e?: React.MouseEvent) => {
-    const isAlreadySelected = selectedItems.find((i) => i.id === item.id || i.name.startsWith(item.name));
+    const isAlreadySelected = selectedItems.find(
+      (i) => i.id === item.id || i.name.startsWith(item.name)
+    );
 
     if (isAlreadySelected) {
       setSelectedItems(selectedItems.filter((i) => i.id !== item.id && !i.name.includes(item.name)));
       return;
     }
 
-    // Intercept Flower Bouquet
+    // Flower Bouquet Modal
     if (item.id === 4) {
       setTempFlowerItem(item);
       setFlowerModalOpen(true);
       return;
     }
 
-    // Normal Item Addition
     processAnimation(e);
     setSelectedItems([...selectedItems, item]);
   };
@@ -90,24 +132,32 @@ export default function BuildPage() {
       if (img) {
         const clone = img.cloneNode(true) as HTMLImageElement;
         const rect = img.getBoundingClientRect();
-        
-        // Target the floating basket on mobile OR the basket panel on desktop
-        const basketElem = basketRef.current || document.getElementById('basket-header');
+        const basketElem = basketRef.current || document.getElementById("basket-header");
         const basketRect = basketElem?.getBoundingClientRect();
 
         if (basketRect) {
           Object.assign(clone.style, {
-            position: "fixed", left: `${rect.left}px`, top: `${rect.top}px`,
-            width: `${rect.width}px`, height: `${rect.height}px`,
-            transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)", zIndex: "1000",
-            borderRadius: "50%", pointerEvents: "none", opacity: "0.8"
+            position: "fixed",
+            left: `${rect.left}px`,
+            top: `${rect.top}px`,
+            width: `${rect.width}px`,
+            height: `${rect.height}px`,
+            transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            zIndex: "1000",
+            borderRadius: "50%",
+            pointerEvents: "none",
+            opacity: "0.8",
           });
           document.body.appendChild(clone);
 
           requestAnimationFrame(() => {
             Object.assign(clone.style, {
-              left: `${basketRect.left + 20}px`, top: `${basketRect.top + 20}px`,
-              width: "20px", height: "20px", opacity: "0", transform: "rotate(360deg)"
+              left: `${basketRect.left + 20}px`,
+              top: `${basketRect.top + 20}px`,
+              width: "20px",
+              height: "20px",
+              opacity: "0",
+              transform: "rotate(360deg)",
             });
           });
           clone.addEventListener("transitionend", () => clone.remove());
@@ -118,14 +168,11 @@ export default function BuildPage() {
 
   const handleProceedToCheckout = () => {
     if (selectedItems.length === 0) return;
-    localStorage.setItem("orderItems", JSON.stringify(selectedItems));
-    localStorage.setItem("orderComment", comment);
     router.push("/Checkout");
   };
 
   return (
     <main className="min-h-screen bg-pink-50 p-4 lg:p-12 relative">
-      
       {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-10">
         <Link href="/" className="text-pink-500 font-bold flex items-center gap-2 hover:underline mb-4">
@@ -137,12 +184,14 @@ export default function BuildPage() {
         <p className="text-gray-500 font-bold mt-2">Tap items to add them to your custom gift set.</p>
       </div>
 
+      {/* MAIN GRID */}
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
-        
         {/* ITEM GRID */}
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((item) => {
-            const isSelected = selectedItems.find((i) => i.id === item.id || i.name.includes(item.name));
+            const isSelected = selectedItems.find(
+              (i) => i.id === item.id || i.name.includes(item.name)
+            );
             return (
               <div
                 key={item.id}
@@ -178,7 +227,7 @@ export default function BuildPage() {
                 <p className="text-gray-400 font-medium italic text-center py-10">Empty basket...</p>
               ) : (
                 selectedItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
+                  <div key={item.name} className="flex justify-between items-center bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
                     <span className="font-bold text-gray-700 text-sm">{item.name}</span>
                     <button onClick={() => toggleItem(item)} className="text-red-400 hover:text-red-600 transition-colors font-black">✕</button>
                   </div>
@@ -253,42 +302,6 @@ export default function BuildPage() {
           </span>
         )}
       </button>
-
-      {/* MOBILE DRAWER (BASKET) */}
-      {isBasketOpen && (
-        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex justify-end">
-          <div className="w-[85%] bg-white h-full p-8 shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black text-gray-900">Your Basket</h2>
-              <button onClick={() => setBasketOpen(false)} className="text-gray-400 p-2"><FaTimes size={24}/></button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto space-y-4 mb-6">
-              {selectedItems.map((item) => (
-                <div key={item.id} className="flex justify-between items-center bg-pink-50 p-4 rounded-2xl">
-                  <span className="font-bold text-gray-800 text-sm">{item.name}</span>
-                  <button onClick={() => toggleItem(item)} className="text-red-400 font-black">✕</button>
-                </div>
-              ))}
-            </div>
-
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Any special requests?"
-              className="w-full bg-gray-50 border-2 border-transparent rounded-2xl p-4 text-sm font-bold text-black mb-6 h-32 outline-none focus:border-pink-200"
-            />
-
-            <button
-              onClick={handleProceedToCheckout}
-              disabled={selectedItems.length === 0}
-              className="w-full bg-pink-500 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-pink-100"
-            >
-              Proceed to Checkout
-            </button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

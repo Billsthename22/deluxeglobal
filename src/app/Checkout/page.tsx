@@ -11,17 +11,22 @@ export default function CheckoutPage() {
   const [orderItems, setOrderItems] = useState<Item[]>([]);
   const [loveLetter, setLoveLetter] = useState<string>("");
 
-  // Form States
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
   useEffect(() => {
-    const savedBox = localStorage.getItem("finalBoxSize");
-    const savedItems = localStorage.getItem("orderItems");
+    // FIXED KEYS: Matches the landing/build page storage names
+    const savedBox = localStorage.getItem("selectedBoxSize"); 
+    const savedItems = localStorage.getItem("selectedItems"); // Check your build page storage key
     const savedLetter = localStorage.getItem("loveLetter");
 
-    if (savedBox) setSelectedBox(savedBox);
+    if (savedBox) {
+        // Capitalize the first letter (e.g., "heart" -> "Heart Box")
+        const formatted = savedBox.charAt(0).toUpperCase() + savedBox.slice(1);
+        setSelectedBox(formatted.includes("Box") ? formatted : `${formatted} Box`);
+    }
+    
     if (savedItems) setOrderItems(JSON.parse(savedItems));
     if (savedLetter) setLoveLetter(savedLetter);
   }, []);
@@ -29,7 +34,6 @@ export default function CheckoutPage() {
   const handleFinalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Construction of the message
     const message = `*NEW CUSTOM ORDER* 🎁%0A%0A` +
       `👤 *Customer:* ${name}%0A` +
       `📞 *Contact:* ${phone}%0A` +
@@ -38,7 +42,6 @@ export default function CheckoutPage() {
       `✨ *Items:* ${orderItems.map((i) => i.name).join(", ")}%0A%0A` +
       `📝 *Love Letter:* ${loveLetter || "None"}`;
 
-    // Using the phone number format for Telegram (Nigeria +234)
     const telegramNumber = "2349061511114"; 
     const url = `https://t.me/+${telegramNumber}?text=${message}`;
     
@@ -69,7 +72,8 @@ export default function CheckoutPage() {
               <FaBoxOpen className="text-pink-500 text-3xl" />
               <div>
                 <p className="text-[10px] text-pink-400 font-black uppercase tracking-[0.2em]">Vessel Size</p>
-                <p className="font-black text-gray-900 text-xl uppercase tracking-tighter">{selectedBox || "Custom Box"}</p>
+                {/* Now properly displays from selectedBoxSize */}
+                <p className="font-black text-gray-900 text-xl uppercase tracking-tighter">{selectedBox || "Atelier Box"}</p>
               </div>
             </div>
 
@@ -77,12 +81,16 @@ export default function CheckoutPage() {
             <div className="space-y-3 mb-8">
               <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest ml-1">Atelier Filling</p>
               <div className="grid grid-cols-1 gap-2">
-                {orderItems.map((item, index) => (
-                    <div key={`${item.id}-${index}`} className="flex items-center gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-pink-200 transition-colors">
-                    <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-xl shadow-sm grayscale group-hover:grayscale-0 transition-all" />
-                    <span className="font-black text-gray-800 text-[10px] uppercase tracking-tight">{item.name}</span>
-                    </div>
-                ))}
+                {orderItems.length > 0 ? (
+                    orderItems.map((item, index) => (
+                        <div key={`${item.id}-${index}`} className="flex items-center gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                        <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-xl shadow-sm grayscale" />
+                        <span className="font-black text-gray-800 text-[10px] uppercase tracking-tight">{item.name}</span>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-gray-400 italic text-xs p-4">No items selected yet...</p>
+                )}
               </div>
             </div>
 
@@ -100,7 +108,6 @@ export default function CheckoutPage() {
 
         {/* RIGHT COLUMN: CONTACT DETAILS */}
         <div className="bg-white rounded-[3rem] p-10 shadow-2xl border-4 border-white self-start lg:mt-12 relative overflow-hidden">
-          {/* Accent decoration */}
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-50 rounded-full blur-3xl opacity-50" />
 
           <h2 className="text-3xl font-black text-gray-900 mb-8 uppercase tracking-tighter relative z-10">
@@ -163,7 +170,6 @@ export default function CheckoutPage() {
             </p>
           </form>
         </div>
-
       </div>
     </main>
   );

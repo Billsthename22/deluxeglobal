@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaBoxOpen, FaArrowLeft, FaShoppingBag, FaUser, FaTruck, FaPhone } from "react-icons/fa";
+import { FaBoxOpen, FaArrowLeft, FaShoppingBag, FaUser, FaTruck, FaPhone, FaTelegramPlane } from "react-icons/fa";
 import Link from "next/link";
 
 type Item = { id: number; name: string; image: string };
@@ -9,7 +9,7 @@ type Item = { id: number; name: string; image: string };
 export default function CheckoutPage() {
   const [selectedBox, setSelectedBox] = useState<string>("");
   const [orderItems, setOrderItems] = useState<Item[]>([]);
-  const [orderComment, setOrderComment] = useState<string>("");
+  const [loveLetter, setLoveLetter] = useState<string>("");
 
   // Form States
   const [name, setName] = useState("");
@@ -17,137 +17,149 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
 
   useEffect(() => {
-    // Retrieve data from localStorage
-    const savedBox = localStorage.getItem("selectedGiftBox");
+    const savedBox = localStorage.getItem("finalBoxSize");
     const savedItems = localStorage.getItem("orderItems");
-    const savedComment = localStorage.getItem("orderComment");
+    const savedLetter = localStorage.getItem("loveLetter");
 
     if (savedBox) setSelectedBox(savedBox);
     if (savedItems) setOrderItems(JSON.parse(savedItems));
-    if (savedComment) setOrderComment(savedComment);
+    if (savedLetter) setLoveLetter(savedLetter);
   }, []);
 
   const handleFinalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Final Message Construction
+    // Construction of the message
     const message = `*NEW CUSTOM ORDER* 🎁%0A%0A` +
       `👤 *Customer:* ${name}%0A` +
-      `📞 *Phone:* ${phone}%0A` +
+      `📞 *Contact:* ${phone}%0A` +
       `📍 *Address:* ${address}%0A%0A` +
       `📦 *Box Type:* ${selectedBox}%0A` +
       `✨ *Items:* ${orderItems.map((i) => i.name).join(", ")}%0A%0A` +
-      `📝 *Notes:* ${orderComment || "None"}`;
+      `📝 *Love Letter:* ${loveLetter || "None"}`;
 
-    const whatsappNumber = "2349155581053";
-    const url = `https://wa.me/${whatsappNumber}?text=${message}`;
+    // Using the phone number format for Telegram (Nigeria +234)
+    const telegramNumber = "2349061511114"; 
+    const url = `https://t.me/+${telegramNumber}?text=${message}`;
+    
     window.open(url, "_blank");
   };
 
   return (
-    <main className="min-h-screen bg-pink-50 p-4 lg:p-12">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <main className="min-h-screen bg-[#fdf2f3] p-4 lg:p-12 pb-24">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
         
         {/* LEFT COLUMN: ORDER SUMMARY */}
         <div className="space-y-6">
-          <Link href="/Build" className="text-pink-500 font-bold flex items-center gap-2 hover:underline">
-            <FaArrowLeft /> Edit Your Selection
+          <Link href="/Build" className="text-pink-500 font-black uppercase text-[10px] flex items-center gap-2 hover:underline tracking-[0.2em]">
+            <FaArrowLeft /> Re-edit Selection
           </Link>
           
-          <h1 className="text-3xl font-black text-gray-900">Review Your Order</h1>
+          <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase leading-none">
+            Review <br/><span className="text-pink-500 font-light italic capitalize tracking-normal">Your Drop</span>
+          </h1>
 
-          <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-pink-100">
-            <h2 className="text-xl font-bold flex items-center gap-2 text-pink-600 mb-4">
-              <FaShoppingBag /> Selected Items
+          <div className="bg-white rounded-[3rem] p-8 shadow-2xl border border-pink-100">
+            <h2 className="text-xl font-black flex items-center gap-2 text-gray-900 mb-6 uppercase tracking-tighter">
+              <FaShoppingBag className="text-pink-500" /> Selected Package
             </h2>
             
             {/* Box Display */}
-            <div className="flex items-center gap-4 bg-pink-50 p-4 rounded-2xl mb-4 border border-pink-100">
-              <FaBoxOpen className="text-pink-500 text-2xl" />
+            <div className="flex items-center gap-4 bg-pink-50 p-6 rounded-[2rem] mb-6 border border-pink-100 shadow-inner">
+              <FaBoxOpen className="text-pink-500 text-3xl" />
               <div>
-                <p className="text-xs text-pink-400 font-black uppercase">Gift Packaging</p>
-                <p className="font-bold text-gray-800">{selectedBox}</p>
+                <p className="text-[10px] text-pink-400 font-black uppercase tracking-[0.2em]">Vessel Size</p>
+                <p className="font-black text-gray-900 text-xl uppercase tracking-tighter">{selectedBox || "Custom Box"}</p>
               </div>
             </div>
 
             {/* Items List */}
-            <ul className="space-y-3 mb-6">
-              {orderItems.map((item) => (
-                <li key={item.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-xl border border-gray-100">
-                  <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-lg" />
-                  <span className="font-bold text-gray-700">{item.name}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-3 mb-8">
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest ml-1">Atelier Filling</p>
+              <div className="grid grid-cols-1 gap-2">
+                {orderItems.map((item, index) => (
+                    <div key={`${item.id}-${index}`} className="flex items-center gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-pink-200 transition-colors">
+                    <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-xl shadow-sm grayscale group-hover:grayscale-0 transition-all" />
+                    <span className="font-black text-gray-800 text-[10px] uppercase tracking-tight">{item.name}</span>
+                    </div>
+                ))}
+              </div>
+            </div>
 
-            {orderComment && (
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-400 font-black uppercase mb-1">Your Special Notes</p>
-                <p className="text-black bg-gray-50 p-3 rounded-xl italic font-medium">"{orderComment}"</p>
+            {loveLetter && (
+              <div className="pt-6 border-t border-gray-100">
+                <p className="text-[10px] text-pink-400 font-black uppercase tracking-widest mb-3">Love Letter Content</p>
+                <div className="bg-pink-50/20 p-6 rounded-3xl border border-dashed border-pink-200 italic text-gray-700 text-sm leading-relaxed shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-10">💌</div>
+                  "{loveLetter}"
+                </div>
               </div>
             )}
           </div>
         </div>
 
         {/* RIGHT COLUMN: CONTACT DETAILS */}
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border-4 border-white self-start">
-          <h2 className="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2">
-            Delivery Details
+        <div className="bg-white rounded-[3rem] p-10 shadow-2xl border-4 border-white self-start lg:mt-12 relative overflow-hidden">
+          {/* Accent decoration */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-50 rounded-full blur-3xl opacity-50" />
+
+          <h2 className="text-3xl font-black text-gray-900 mb-8 uppercase tracking-tighter relative z-10">
+            Shipping <span className="text-pink-500">&</span> Contact
           </h2>
           
-          <form onSubmit={handleFinalSubmit} className="space-y-5">
+          <form onSubmit={handleFinalSubmit} className="space-y-6 relative z-10">
             <div>
-              <label className="block text-sm font-black text-gray-500 uppercase mb-2 ml-1">Full Name</label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Client Name</label>
               <div className="relative">
-                <FaUser className="absolute left-4 top-4 text-pink-300" />
+                <FaUser className="absolute left-5 top-5 text-pink-300" />
                 <input 
                   required
                   type="text" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-300 focus:bg-white rounded-2xl outline-none transition-all text-black font-bold"
+                  placeholder="Full name"
+                  className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-pink-200 focus:bg-white rounded-[1.5rem] outline-none transition-all text-gray-900 font-bold placeholder:text-gray-300 shadow-inner"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-black text-gray-500 uppercase mb-2 ml-1">WhatsApp Number</label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Telegram Handle or Phone</label>
               <div className="relative">
-                <FaPhone className="absolute left-4 top-4 text-pink-300" />
+                <FaPhone className="absolute left-5 top-5 text-pink-300" />
                 <input 
                   required
                   type="tel" 
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. 09061511114"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-300 focus:bg-white rounded-2xl outline-none transition-all text-black font-bold"
+                  placeholder="e.g. @username or 080..."
+                  className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-pink-200 focus:bg-white rounded-[1.5rem] outline-none transition-all text-gray-900 font-bold placeholder:text-gray-300 shadow-inner"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-black text-gray-500 uppercase mb-2 ml-1">Delivery Address</label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Delivery Address</label>
               <div className="relative">
-                <FaTruck className="absolute left-4 top-4 text-pink-300" />
+                <FaTruck className="absolute left-5 top-5 text-pink-300" />
                 <textarea 
                   required
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Street address, City, State"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-pink-300 focus:bg-white rounded-2xl outline-none transition-all text-black font-bold h-32"
+                  placeholder="Street address, Apartment, City..."
+                  className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-pink-200 focus:bg-white rounded-[1.5rem] outline-none transition-all text-gray-900 font-bold h-32 resize-none placeholder:text-gray-300 shadow-inner"
                 />
               </div>
             </div>
 
             <button 
               type="submit"
-              className="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-5 rounded-3xl font-black text-xl shadow-xl shadow-pink-100 hover:shadow-pink-200 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
+              className="w-full bg-gray-900 text-white py-6 rounded-full font-black text-xs uppercase tracking-[0.4em] shadow-2xl hover:bg-pink-600 transition-all flex items-center justify-center gap-3 active:scale-95 group"
             >
-              Confirm Order <FaShoppingBag />
+              SEND ORDER <FaTelegramPlane size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
-            <p className="text-center text-xs text-gray-400 font-medium">
-              Clicking "Confirm" will send your order details to us on WhatsApp to finalize payment.
+            <p className="text-center text-[9px] text-gray-400 font-black uppercase tracking-widest leading-relaxed">
+              Order will be finalized on Telegram
             </p>
           </form>
         </div>

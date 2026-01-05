@@ -8,8 +8,7 @@ import {
   FaArrowRight, 
   FaEdit, 
   FaPenFancy, 
-  FaTimes,
-  FaTools
+  FaTimes 
 } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -50,26 +49,22 @@ export default function BuildPage() {
   const [comment, setComment] = useState<string>("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Modal & Drawer States
   const [isBasketOpen, setIsBasketOpen] = useState(false);
   const [flowerModalOpen, setFlowerModalOpen] = useState(false);
   const [journalModalOpen, setJournalModalOpen] = useState(false);
   const [tempFlowerItem, setTempFlowerItem] = useState<Item | null>(null);
   const [letterText, setLetterText] = useState("");
 
-  // ✅ LOAD DATA
   useEffect(() => {
     const savedItems = localStorage.getItem("orderItems");
     const savedBox = localStorage.getItem("selectedBoxSize");
     const savedComment = localStorage.getItem("orderComment");
-
     if (savedItems) setSelectedItems(JSON.parse(savedItems));
     if (savedBox) setSelectedBox(savedBox);
     if (savedComment) setComment(savedComment);
     setIsLoaded(true);
   }, []);
 
-  // ✅ SAVE DATA
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem("orderItems", JSON.stringify(selectedItems));
@@ -79,23 +74,12 @@ export default function BuildPage() {
 
   const toggleItem = (item: Item, e?: React.MouseEvent) => {
     const exists = selectedItems.find((i) => i.id === item.id);
-
     if (exists) {
       setSelectedItems(selectedItems.filter((i) => i.id !== item.id));
       return;
     }
-
-    if (item.id === 4) {
-      setTempFlowerItem(item);
-      setFlowerModalOpen(true);
-      return;
-    }
-
-    if (item.id === 13) {
-      setJournalModalOpen(true);
-      return;
-    }
-
+    if (item.id === 4) { setTempFlowerItem(item); setFlowerModalOpen(true); return; }
+    if (item.id === 13) { setJournalModalOpen(true); return; }
     processAnimation(e);
     setSelectedItems((prev) => [...prev, item]);
   };
@@ -103,8 +87,7 @@ export default function BuildPage() {
   const handleJournalSubmit = () => {
     const journalItem = items.find(i => i.id === 13);
     if (journalItem) {
-      const newItem = { ...journalItem, letter: letterText };
-      setSelectedItems(prev => [...prev, newItem]);
+      setSelectedItems(prev => [...prev, { ...journalItem, letter: letterText }]);
     }
     setJournalModalOpen(false);
     setLetterText("");
@@ -121,11 +104,7 @@ export default function BuildPage() {
 
   const handleFlowerChoice = (roses: number) => {
     if (!tempFlowerItem) return;
-    const newItem = { 
-        ...tempFlowerItem, 
-        id: Date.now(), 
-        name: `${tempFlowerItem.name} (${roses} Roses)` 
-    };
+    const newItem = { ...tempFlowerItem, id: Date.now(), name: `${tempFlowerItem.name} (${roses} Roses)` };
     setSelectedItems((prev) => [...prev, newItem]);
     setFlowerModalOpen(false);
   };
@@ -134,102 +113,107 @@ export default function BuildPage() {
     if (!e || !basketRef.current) return;
     const img = (e.currentTarget as HTMLElement).querySelector("img");
     if (!img) return;
-
     const clone = img.cloneNode(true) as HTMLImageElement;
     const rect = img.getBoundingClientRect();
     const basketRect = basketRef.current.getBoundingClientRect();
-
     Object.assign(clone.style, {
-      position: "fixed",
-      left: `${rect.left}px`,
-      top: `${rect.top}px`,
-      width: `${rect.width}px`,
-      height: `${rect.height}px`,
-      transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-      zIndex: "1000",
-      borderRadius: "50%",
-      pointerEvents: "none",
+      position: "fixed", left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px`,
+      transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)", zIndex: "1000", borderRadius: "50%", pointerEvents: "none",
     });
-
     document.body.appendChild(clone);
     requestAnimationFrame(() => {
-      Object.assign(clone.style, {
-        left: `${basketRect.left + 20}px`,
-        top: `${basketRect.top + 20}px`,
-        width: "20px",
-        height: "20px",
-        opacity: "0",
-      });
+      Object.assign(clone.style, { left: `${basketRect.left + 20}px`, top: `${basketRect.top + 20}px`, width: "20px", height: "20px", opacity: "0" });
     });
     clone.addEventListener("transitionend", () => clone.remove());
   };
 
   return (
-    <main className="min-h-screen bg-pink-50 p-4 lg:p-12 relative overflow-x-hidden">
-      {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-10">
-        <Link href="/" className="text-pink-500 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:underline mb-4">
-          <FaArrowLeft /> Change Box Type
+    <main className="min-h-screen bg-[#fafafa] p-4 lg:p-12 relative overflow-x-hidden">
+      
+      {/* MINIMAL STICKY HEADER */}
+      <div className="fixed top-0 left-0 w-full z-[100] bg-white/80 backdrop-blur-md border-b border-pink-100 p-4 lg:px-12">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase text-pink-500 tracking-widest">
+                The Atelier Box
+            </span>
+            <button 
+                onClick={() => router.push("/Checkout")}
+                disabled={selectedItems.length === 0}
+                className="bg-gray-900 text-white px-6 py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-pink-600 transition-colors disabled:opacity-20"
+            >
+                Checkout <FaArrowRight size={10} />
+            </button>
+        </div>
+      </div>
+
+      {/* HEADER CONTENT */}
+      <div className="max-w-7xl mx-auto mb-8 mt-16 lg:mt-20">
+        <Link href="/" className="text-pink-500 font-black uppercase text-[9px] tracking-[0.2em] flex items-center gap-2 mb-2">
+          <FaArrowLeft /> Change Box
         </Link>
-        <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase leading-none">
-          Build Your <br/>
+        <h1 className="text-3xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase leading-tight">
+          Fill Your <br/>
           <span className="text-pink-500 italic font-light capitalize tracking-normal">{selectedBox}</span>
         </h1>
       </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
-        {/* ITEM GRID */}
-        <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
+        {/* ITEM GRID - 2 columns on mobile, Portrait style */}
+        <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           {items.map((item) => {
             const isSelected = selectedItems.some((i) => i.id === item.id);
             return (
               <div
                 key={item.id}
                 onClick={(e) => toggleItem(item, e)}
-                className={`group relative cursor-pointer rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-lg transition-all duration-300 bg-white border-4 ${
-                  isSelected ? "border-pink-500 scale-105 shadow-pink-100" : "border-white hover:border-pink-100"
+                className={`group relative cursor-pointer rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden transition-all duration-300 bg-white border ${
+                  isSelected ? "border-pink-500 ring-2 ring-pink-500/20" : "border-gray-100 hover:border-pink-200"
                 }`}
               >
-                <div className="relative h-40 md:h-56 w-full overflow-hidden">
-                   <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <div className="relative aspect-[4/5] w-full overflow-hidden">
+                   <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                   {isSelected && (
+                      <div className="absolute inset-0 bg-pink-500/10 flex items-center justify-center backdrop-blur-[1px]">
+                         <div className="bg-white text-pink-500 p-2 rounded-full shadow-lg scale-110">
+                            <FaCheckCircle size={16} />
+                         </div>
+                      </div>
+                   )}
                 </div>
-                <div className="p-4 text-center">
-                  <p className="font-black text-gray-800 text-[10px] uppercase tracking-tighter leading-tight">{item.name}</p>
+                <div className="p-3 bg-white">
+                  <p className="font-bold text-gray-800 text-[10px] md:text-xs uppercase tracking-tight text-center truncate px-1">
+                    {item.name}
+                  </p>
                 </div>
-                {isSelected && (
-                  <div className="absolute top-4 right-4 bg-pink-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in">
-                    <FaCheckCircle size={16} />
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
 
         {/* DESKTOP SIDEBAR */}
-        <div className="hidden lg:block w-96 sticky top-10 self-start">
-          <div className="bg-white rounded-[3.5rem] p-10 shadow-2xl border border-pink-100">
+        <div className="hidden lg:block w-96 sticky top-28 self-start">
+          <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-pink-100">
              <BasketUI 
                 selectedItems={selectedItems} 
                 toggleItem={toggleItem} 
                 handleEditLetter={handleEditLetter}
                 comment={comment}
                 setComment={setComment}
-                router={router}
+                onCheckout={() => router.push("/Checkout")}
              />
           </div>
         </div>
       </div>
 
-      {/* MOBILE DRAWER */}
+      {/* MOBILE BASKET DRAWER */}
       {isBasketOpen && (
         <div className="fixed inset-0 z-[500] lg:hidden">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => setIsBasketOpen(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[4rem] p-10 shadow-2xl animate-in slide-in-from-bottom duration-500 max-h-[85vh] overflow-y-auto">
-            <div className="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-8" />
-            <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">Your Bag</h2>
-                <button onClick={() => setIsBasketOpen(false)} className="bg-gray-50 p-4 rounded-full text-gray-400"><FaTimes/></button>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsBasketOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[3rem] p-8 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto">
+            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
+            <div className="flex justify-between items-center mb-6 px-2">
+              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Your Bag</h2>
+              <button onClick={() => setIsBasketOpen(false)} className="text-gray-400 p-2"><FaTimes size={20}/></button>
             </div>
             <BasketUI 
                 selectedItems={selectedItems} 
@@ -237,21 +221,21 @@ export default function BuildPage() {
                 handleEditLetter={handleEditLetter}
                 comment={comment}
                 setComment={setComment}
-                router={router}
+                onCheckout={() => router.push("/Checkout")}
              />
           </div>
         </div>
       )}
 
-      {/* FLOATING MOBILE TRIGGER */}
+      {/* FLOATING MOBILE BASKET */}
       <button
         ref={basketRef}
         onClick={() => setIsBasketOpen(true)}
-        className="lg:hidden fixed bottom-8 right-6 bg-gray-900 text-white w-20 h-20 rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 active:scale-90 transition-all border-4 border-white"
+        className="lg:hidden fixed bottom-6 right-6 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-all border-4 border-white"
       >
-        <FaShoppingBasket size={24} />
+        <FaShoppingBasket size={20} />
         {selectedItems.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-black text-xs border-4 border-white">
+          <span className="absolute -top-1 -right-1 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-black text-[10px]">
             {selectedItems.length}
           </span>
         )}
@@ -259,23 +243,23 @@ export default function BuildPage() {
 
       {/* JOURNAL MODAL */}
       {journalModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-xl z-[600] flex items-center justify-center p-6">
-          <div className="bg-white rounded-[4rem] p-10 md:p-14 max-w-xl w-full shadow-2xl animate-in zoom-in">
-            <div className="text-center mb-8">
-                <div className="w-20 h-20 bg-pink-50 text-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in duration-300">
+            <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-pink-500 text-2xl">
                     <FaPenFancy />
                 </div>
-                <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter leading-none">The Atelier <br/>Letter</h2>
+                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Write Letter</h2>
             </div>
             <textarea 
                 value={letterText}
                 onChange={(e) => setLetterText(e.target.value)}
-                placeholder="Write your heart out..."
-                className="w-full h-64 bg-amber-50/20 border-2 border-amber-100/50 rounded-[2.5rem] p-8 text-gray-800 font-bold italic outline-none focus:border-pink-200 transition-all resize-none shadow-inner"
+                placeholder="Include a message in your journal..."
+                className="w-full h-48 bg-amber-50/20 border-2 border-amber-100/50 rounded-2xl p-6 text-gray-800 font-medium italic outline-none focus:border-pink-200 transition-all resize-none shadow-inner"
             />
-            <div className="grid grid-cols-2 gap-4 mt-8">
-                <button onClick={() => { setJournalModalOpen(false); setLetterText(""); }} className="py-6 font-black text-gray-400 uppercase tracking-widest text-[10px]">Cancel</button>
-                <button onClick={handleJournalSubmit} className="bg-pink-500 text-white py-6 rounded-3xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-pink-100">Save Letter</button>
+            <div className="grid grid-cols-2 gap-3 mt-6">
+                <button onClick={() => { setJournalModalOpen(false); setLetterText(""); }} className="py-4 font-black text-gray-400 uppercase tracking-widest text-[10px]">Discard</button>
+                <button onClick={handleJournalSubmit} className="bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Save</button>
             </div>
           </div>
         </div>
@@ -283,19 +267,19 @@ export default function BuildPage() {
 
       {/* FLOWER MODAL */}
       {flowerModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-xl z-[600] flex items-center justify-center p-6">
-           <div className="bg-white rounded-[4rem] p-12 max-w-sm w-full shadow-2xl animate-in zoom-in text-center">
-            <span className="text-6xl block mb-6">🌹</span>
-            <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-8">Bouquet Size</h2>
-            <div className="space-y-4">
-              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 hover:bg-pink-100 border-2 border-pink-100 p-6 rounded-[2rem] transition-all group">
-                <span className="block text-2xl font-black text-pink-600 uppercase tracking-tighter">15 Roses</span>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-center justify-center p-4">
+           <div className="bg-white rounded-[2.5rem] p-10 max-w-xs w-full shadow-2xl animate-in zoom-in text-center">
+            <span className="text-5xl block mb-4">🌹</span>
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-6">Bouquet Size</h2>
+            <div className="space-y-3">
+              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 p-5 rounded-2xl transition-all">
+                <span className="block text-xl font-black text-pink-600">15 ROSES</span>
               </button>
-              <button onClick={() => handleFlowerChoice(20)} className="w-full bg-gray-900 hover:bg-black p-6 rounded-[2rem] transition-all group">
-                <span className="block text-2xl font-black text-white uppercase tracking-tighter">20 Roses</span>
+              <button onClick={() => handleFlowerChoice(20)} className="w-full bg-gray-900 hover:bg-black p-5 rounded-2xl transition-all">
+                <span className="block text-xl font-black text-white">20 ROSES</span>
               </button>
             </div>
-            <button onClick={() => setFlowerModalOpen(false)} className="mt-8 text-gray-400 font-black uppercase tracking-widest text-[10px]">Back</button>
+            <button onClick={() => setFlowerModalOpen(false)} className="mt-6 text-gray-400 font-black uppercase tracking-widest text-[10px]">Cancel</button>
           </div>
         </div>
       )}
@@ -303,54 +287,41 @@ export default function BuildPage() {
   );
 }
 
-// ✅ EXTRACTED UI COMPONENT FOR DRY CODE
-function BasketUI({ selectedItems, toggleItem, handleEditLetter, comment, setComment, router }: any) {
+function BasketUI({ selectedItems, toggleItem, handleEditLetter, comment, setComment, onCheckout }: any) {
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex items-center gap-3 mb-8">
-              <FaShoppingBasket className="text-pink-500 text-2xl" />
-              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Your Basket</h2>
-            </div>
-
-            <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
+        <>
+            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 mb-6 custom-scrollbar">
               {selectedItems.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-gray-100 rounded-[2rem]">
-                   <p className="text-gray-300 font-black uppercase text-[10px] tracking-widest italic">Basket is empty</p>
-                </div>
+                <p className="text-gray-300 text-center py-12 italic uppercase text-[10px] tracking-widest">Bag is empty</p>
               ) : (
                 selectedItems.map((item: any) => (
-                  <div key={item.id} className="group flex flex-col bg-gray-50 p-5 rounded-[2rem] border border-gray-100 transition-all hover:bg-white hover:shadow-xl">
+                  <div key={item.id} className="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100">
                     <div className="flex justify-between items-center">
-                        <span className="font-black text-gray-800 text-[10px] uppercase tracking-tight">{item.name}</span>
-                        <button onClick={() => toggleItem(item)} className="text-gray-300 hover:text-red-500 transition-colors">✕</button>
+                        <span className="font-black text-gray-700 text-[10px] uppercase tracking-tight">{item.name}</span>
+                        <button onClick={() => toggleItem(item)} className="text-red-300 hover:text-red-500 p-1">✕</button>
                     </div>
                     {item.letter && (
-                        <button onClick={() => handleEditLetter(item.id)} className="mt-3 text-[9px] flex items-center gap-2 text-pink-500 font-black uppercase tracking-widest hover:underline">
-                            <FaEdit /> Edit Journal Entry
+                        <button onClick={() => handleEditLetter(item.id)} className="mt-2 text-[9px] flex items-center gap-1 text-pink-500 font-black uppercase tracking-widest hover:underline">
+                            <FaEdit /> Edit Letter
                         </button>
                     )}
                   </div>
                 ))
               )}
             </div>
-
-            <div className="mt-auto">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Notes & Preferences</label>
-                <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="e.g. Color themes, delivery notes..."
-                    className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-[1.5rem] p-5 text-[11px] font-bold text-gray-900 outline-none h-28 mb-8 transition-all resize-none"
-                />
-
-                <button
-                    onClick={() => router.push("/Checkout")}
-                    disabled={selectedItems.length === 0}
-                    className="w-full bg-gray-900 hover:bg-pink-600 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all active:scale-95 disabled:opacity-20 disabled:grayscale flex items-center justify-center gap-3"
-                >
-                    Checkout <FaArrowRight size={12}/>
-                </button>
-            </div>
-        </div>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Notes for the atelier..."
+              className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl p-4 text-[11px] font-bold text-gray-900 outline-none h-24 mb-6 transition-all"
+            />
+            <button
+              onClick={onCheckout}
+              disabled={selectedItems.length === 0}
+              className="w-full bg-gray-900 text-white py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-xl disabled:opacity-20 flex items-center justify-center gap-2"
+            >
+              Checkout <FaArrowRight size={12}/>
+            </button>
+        </>
     );
 }

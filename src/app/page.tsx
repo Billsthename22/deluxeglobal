@@ -10,26 +10,55 @@ const greatVibes = Great_Vibes({ weight: '400', subsets: ['latin'] });
 const montserrat = Montserrat({ subsets: ['latin'], weight: ['400', '700', '900'] });
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '900'] });
 
+// --- SHARED BOX CONFIGURATION ---
+// This array matches the logic we will use on the Build page
+export const BOX_TYPES = [
+  { 
+    id: "heart", 
+    name: "Heart Box", 
+    desc: "Our Signature Valentine Vessel", 
+    priceLabel: "Premium", 
+    limit: 6, 
+    color: "text-rose-500",
+    bg: "bg-rose-500"
+  },
+  { 
+    id: "medium", 
+    name: "Medium Box", 
+    desc: "The Versatile Classic Box", 
+    priceLabel: "Signature", 
+    limit: 12, 
+    color: "text-rose-600",
+    bg: "bg-rose-600"
+  },
+  { 
+    id: "large", 
+    name: "Large Box", 
+    desc: "The Grand Gifting Statement", 
+    priceLabel: "Elite", 
+    limit: 20, 
+    color: "text-gray-900",
+    bg: "bg-gray-900"
+  },
+];
+
 export default function ValentinesLanding() {
   const router = useRouter(); 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<string | null>(null);
 
-  const boxes = [
-    { id: "heart", name: "Heart", desc: "Our Signature Valentine Vessel", price: "Premium" },
-    { id: "medium", name: "Medium", desc: "The Versatile Classic Box", price: "Signature" },
-    { id: "large", name: "Large", desc: "The Grand Gifting Statement", price: "Elite" },
-  ];
-
   const handleProceedToBuild = () => {
     if (selectedBox) {
-      localStorage.setItem("selectedBoxSize", selectedBox.toLowerCase());
-      router.push("/Build");
+      // Find the specific box from the array to ensure we save the exact name
+      const boxData = BOX_TYPES.find(b => b.name === selectedBox);
+      if (boxData) {
+        localStorage.setItem("selectedBoxSize", boxData.name);
+        router.push("/Build");
+      }
     }
   };
 
   return (
-    // Changed bg-[#050505] to bg-[#fdf2f3] (pink-50 shade) and text to dark gray
     <main className={`min-h-screen bg-[#fdf2f3] text-gray-900 ${montserrat.className} selection:bg-rose-500 selection:text-white overflow-x-hidden`}>
       
       {/* --- NAV --- */}
@@ -53,7 +82,6 @@ export default function ValentinesLanding() {
 
       {/* --- HERO SECTION --- */}
       <section className="relative h-screen flex flex-col justify-center items-center px-6 overflow-hidden">
-        {/* Background Text - Lightened for pink background */}
         <div className={`${greatVibes.className} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[40vw] md:text-[25vw] text-rose-500/[0.05] whitespace-nowrap pointer-events-none z-0`}>
           Deluxe
         </div>
@@ -83,7 +111,7 @@ export default function ValentinesLanding() {
         </div>
       </section>
 
-      {/* --- IMAGE & WRITING SECTION --- */}
+      {/* --- IMAGE & WRITING SECTION (Mapping list items from array is possible here too) --- */}
       <section className="py-20 md:py-40 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20 items-center">
           <div className="lg:col-span-7 relative order-2 lg:order-1">
@@ -102,22 +130,18 @@ export default function ValentinesLanding() {
           <div className="lg:col-span-5 space-y-8 md:space-y-10 order-1 lg:order-2">
             <h3 className={`${playfair.className} text-4xl md:text-5xl italic text-rose-500`}>The Valentine Selection</h3>
             <p className="text-gray-600 leading-relaxed tracking-wide text-sm">
-                Our <span className="text-gray-900 font-bold italic underline decoration-rose-300">Heart, Medium, and Large</span> vessels are seasonal exclusives, handcrafted by the Deluxe Global team to house the world&apos;s finest jewelry, roses, and bespoke treasures.
+                Our bespoke vessels are seasonal exclusives, handcrafted by the Deluxe Global team to house the world&apos;s finest jewelry, roses, and bespoke treasures.
             </p>
             
             <ul className="space-y-4 md:space-y-6">
-                {[
-                    { label: "Heart Vessel", desc: "Our signature romantic silhouette for jewelry & roses." },
-                    { label: "Medium Atelier", desc: "The perfect balance for curated luxury pairings." },
-                    { label: "Grand Estate (Large)", desc: "Our most expansive vessel for ultimate gifting." }
-                ].map((item, i) => (
+                {BOX_TYPES.map((box, i) => (
                     <li key={i} className="flex items-center gap-4 group">
                         <div className="shrink-0 w-8 h-8 md:w-10 md:h-10 border border-rose-200 flex items-center justify-center text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all rounded-full bg-white shadow-sm">
                             <FaStar size={10} />
                         </div>
                         <div>
-                            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-900">{item.label}</p>
-                            <p className="text-[10px] md:text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-900">{box.name}</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 mt-0.5">{box.desc}</p>
                         </div>
                     </li>
                 ))}
@@ -151,19 +175,19 @@ export default function ValentinesLanding() {
               </div>
 
               <div className="space-y-4">
-                {boxes.map((box) => (
+                {BOX_TYPES.map((box) => (
                   <button
                     key={box.id}
                     onClick={() => setSelectedBox(box.name)}
                     className={`w-full text-left p-6 md:p-8 transition-all border-2 rounded-3xl ${
                       selectedBox === box.name 
-                      ? "bg-rose-500 border-rose-500 shadow-xl shadow-rose-200 scale-[1.02]" 
+                      ? `${box.bg} border-transparent shadow-xl shadow-rose-200 scale-[1.02]` 
                       : "bg-pink-50 border-rose-100 hover:border-rose-300"
                     }`}
                   >
                     <div className="flex justify-between items-baseline gap-2">
                         <p className={`${playfair.className} text-lg md:text-3xl uppercase ${selectedBox === box.name ? 'text-white' : 'text-gray-900'}`}>{box.name}</p>
-                        <span className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest shrink-0 ${selectedBox === box.name ? 'text-white/70' : 'text-rose-500'}`}>{box.price}</span>
+                        <span className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest shrink-0 ${selectedBox === box.name ? 'text-white/70' : 'text-rose-500'}`}>{box.priceLabel}</span>
                     </div>
                     <p className={`text-[8px] md:text-[10px] uppercase tracking-widest mt-2 font-bold ${selectedBox === box.name ? 'text-white/80' : 'text-gray-400'}`}>{box.desc}</p>
                   </button>

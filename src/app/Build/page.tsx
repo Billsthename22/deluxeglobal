@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FaCheckCircle, FaShoppingBasket, FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaCheckCircle, FaShoppingBasket, FaArrowLeft, FaArrowRight, FaEdit, FaPenFancy } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-type Item = { id: number; name: string; image: string };
+type Item = { id: number; name: string; image: string; letter?: string };
 
 const items: Item[] = [
   { id: 1, name: "Branded Purse", image: "/items/purse.jpg" },
@@ -21,191 +21,172 @@ const items: Item[] = [
   { id: 11, name: "Mini Fan", image: "/items/minifan.jpg" },
   { id: 12, name: "Mini Jewellery Box", image: "/items/jewellerybox.jpg" },
   { id: 13, name: "Journal", image: "/items/journal.jpg" },
-  { id: 14, name: "Love Letter", image: "/items/loveletter.jpg" },
-  { id: 15, name: "Perfume 3-in-1", image: "/items/perfume.jpg" },
-  { id: 16, name: "Influencer LED", image: "/items/led.jpg" },
-  { id: 17, name: "Cluster Lashes", image: "/items/cluster.jpg" },
-  { id: 18, name: "Customized Charms", image: "/items/charms.jpg" },
-  { id: 19, name: "Selfie Stick stand", image: "/items/Selfiestick.jpg" },
-  { id: 20, name: "Wall LED light", image: "/items/Selfiestick.jpg" },
-  { id: 21, name: "Face Mask", image: "/items/Selfiestick.jpg" },
-  { id: 22, name: "Bloomer Shorts", image: "/items/Selfiestick.jpg" },
-  { id: 23, name: "Money Box", image: "/items/moneybox.jpg" },
+  { id: 14, name: "Perfume 3-in-1", image: "/items/perfume.jpg" },
+  { id: 15, name: "Influencer LED", image: "/items/led.jpg" },
+  { id: 16, name: "Cluster Lashes", image: "/items/cluster.jpg" },
+  { id: 17, name: "Customized Charms", image: "/items/charms.jpg" },
+  { id: 18, name: "Selfie Stick stand", image: "/items/Selfiestick.jpg" },
+  { id: 19, name: "Wall LED light", image: "/items/wall-led.jpg" },
+  { id: 20, name: "Face Mask", image: "/items/facemask.jpg" },
+  { id: 21, name: "Bloomer Shorts", image: "/items/shorts.jpg" },
+  { id: 22, name: "Money Box", image: "/items/moneybox.jpg" },
 ];
 
 export default function BuildPage() {
   const router = useRouter();
-  const [selectedItems, setSelectedItems] = useState<Item[]>(() => {
-    if (typeof window === "undefined") return [];
-    const saved = localStorage.getItem("orderItems");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [selectedBox, setSelectedBox] = useState<string>("Standard Box");
-  const [comment, setComment] = useState(() => {
-    if (typeof window === "undefined") return "";
-    return localStorage.getItem("orderComment") || "";
-  });
-  const [isBasketOpen, setBasketOpen] = useState(false);
-
-  const [flowerModalOpen, setFlowerModalOpen] = useState(false);
-  const [tempFlowerItem, setTempFlowerItem] = useState<Item | null>(null);
-
   const basketRef = useRef<HTMLButtonElement | null>(null);
 
-  // ✅ Load saved data from localStorage on mount
+  const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+  const [selectedBox, setSelectedBox] = useState<string>("Standard Box");
+  const [comment, setComment] = useState<string>("");
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Modal States
+  const [flowerModalOpen, setFlowerModalOpen] = useState(false);
+  const [journalModalOpen, setJournalModalOpen] = useState(false);
+  const [tempFlowerItem, setTempFlowerItem] = useState<Item | null>(null);
+  const [letterText, setLetterText] = useState("");
+
   useEffect(() => {
-    const savedBox = localStorage.getItem("boxType");
     const savedItems = localStorage.getItem("orderItems");
+    const savedBox = localStorage.getItem("selectedBoxSize");
     const savedComment = localStorage.getItem("orderComment");
 
-    if (savedBox) {
-      try {
-        const box = JSON.parse(savedBox);
-        if (box?.name) setSelectedBox(box.name);
-        else setSelectedBox(savedBox);
-      } catch {
-        setSelectedBox(savedBox);
-      }
-    }
-
-    if (savedItems) {
-      try {
-        setSelectedItems(JSON.parse(savedItems));
-      } catch {
-        setSelectedItems([]);
-      }
-    }
-
+    if (savedItems) setSelectedItems(JSON.parse(savedItems));
+    if (savedBox) setSelectedBox(savedBox);
     if (savedComment) setComment(savedComment);
+    setIsLoaded(true);
   }, []);
 
-  // ✅ Persist selected items, comment, and box to localStorage
   useEffect(() => {
-    localStorage.setItem("orderItems", JSON.stringify(selectedItems));
-  }, [selectedItems]);
-
-  useEffect(() => {
-    localStorage.setItem("orderComment", comment);
-  }, [comment]);
-
-  useEffect(() => {
-    localStorage.setItem("boxType", JSON.stringify({ name: selectedBox }));
-  }, [selectedBox]);
+    if (isLoaded) {
+      localStorage.setItem("orderItems", JSON.stringify(selectedItems));
+      localStorage.setItem("orderComment", comment);
+    }
+  }, [selectedItems, comment, isLoaded]);
 
   const toggleItem = (item: Item, e?: React.MouseEvent) => {
-    const isAlreadySelected = selectedItems.find(
-      (i) => i.id === item.id || i.name.startsWith(item.name)
-    );
+    const exists = selectedItems.find((i) => i.id === item.id);
 
-    if (isAlreadySelected) {
-      setSelectedItems(selectedItems.filter((i) => i.id !== item.id && !i.name.includes(item.name)));
+    if (exists) {
+      setSelectedItems(selectedItems.filter((i) => i.id !== item.id));
       return;
     }
 
-    // Flower Bouquet Modal
     if (item.id === 4) {
       setTempFlowerItem(item);
       setFlowerModalOpen(true);
       return;
     }
 
+    // Journal Case
+    if (item.id === 13) {
+      setJournalModalOpen(true);
+      return;
+    }
+
     processAnimation(e);
-    setSelectedItems([...selectedItems, item]);
+    setSelectedItems((prev) => [...prev, item]);
+  };
+
+  const handleJournalSubmit = () => {
+    const journalItem = items.find(i => i.id === 13);
+    if (journalItem) {
+      const newItem = { ...journalItem, letter: letterText };
+      setSelectedItems(prev => [...prev, newItem]);
+    }
+    setJournalModalOpen(false);
+    setLetterText("");
+  };
+
+  const handleEditLetter = (id: number) => {
+    const itemToEdit = selectedItems.find(i => i.id === id);
+    if (itemToEdit) {
+      setLetterText(itemToEdit.letter || "");
+      // Remove temporarily so it can be "re-added" with new text
+      setSelectedItems(prev => prev.filter(i => i.id !== id));
+      setJournalModalOpen(true);
+    }
   };
 
   const handleFlowerChoice = (roses: number) => {
-    if (tempFlowerItem) {
-      const newItem = {
-        ...tempFlowerItem,
-        name: `${tempFlowerItem.name} (${roses} Scented Roses)`,
-      };
-      setSelectedItems([...selectedItems, newItem]);
-      setFlowerModalOpen(false);
-      setTempFlowerItem(null);
-    }
+    if (!tempFlowerItem) return;
+    const newItem = { 
+        ...tempFlowerItem, 
+        id: Date.now(), 
+        name: `${tempFlowerItem.name} (${roses} Scented Roses)` 
+    };
+    setSelectedItems((prev) => [...prev, newItem]);
+    setFlowerModalOpen(false);
   };
 
   const processAnimation = (e?: React.MouseEvent) => {
-    if (e && (basketRef.current || window.innerWidth > 1024)) {
-      const target = e.currentTarget as HTMLElement;
-      const img = target.querySelector("img");
-      if (img) {
-        const clone = img.cloneNode(true) as HTMLImageElement;
-        const rect = img.getBoundingClientRect();
-        const basketElem = basketRef.current || document.getElementById("basket-header");
-        const basketRect = basketElem?.getBoundingClientRect();
+    if (!e || !basketRef.current) return;
+    const img = (e.currentTarget as HTMLElement).querySelector("img");
+    if (!img) return;
 
-        if (basketRect) {
-          Object.assign(clone.style, {
-            position: "fixed",
-            left: `${rect.left}px`,
-            top: `${rect.top}px`,
-            width: `${rect.width}px`,
-            height: `${rect.height}px`,
-            transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-            zIndex: "1000",
-            borderRadius: "50%",
-            pointerEvents: "none",
-            opacity: "0.8",
-          });
-          document.body.appendChild(clone);
+    const clone = img.cloneNode(true) as HTMLImageElement;
+    const rect = img.getBoundingClientRect();
+    const basketRect = basketRef.current.getBoundingClientRect();
 
-          requestAnimationFrame(() => {
-            Object.assign(clone.style, {
-              left: `${basketRect.left + 20}px`,
-              top: `${basketRect.top + 20}px`,
-              width: "20px",
-              height: "20px",
-              opacity: "0",
-              transform: "rotate(360deg)",
-            });
-          });
-          clone.addEventListener("transitionend", () => clone.remove());
-        }
-      }
-    }
-  };
+    Object.assign(clone.style, {
+      position: "fixed",
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
+      transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+      zIndex: "1000",
+      borderRadius: "50%",
+      pointerEvents: "none",
+    });
 
-  const handleProceedToCheckout = () => {
-    if (selectedItems.length === 0) return;
-    router.push("/Checkout");
+    document.body.appendChild(clone);
+    requestAnimationFrame(() => {
+      Object.assign(clone.style, {
+        left: `${basketRect.left + 20}px`,
+        top: `${basketRect.top + 20}px`,
+        width: "20px",
+        height: "20px",
+        opacity: "0",
+      });
+    });
+    clone.addEventListener("transitionend", () => clone.remove());
   };
 
   return (
-    <main className="min-h-screen bg-pink-50 p-4 lg:p-12 relative">
+    <main className="min-h-screen bg-pink-50 p-4 lg:p-12 relative overflow-x-hidden">
       {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-10">
         <Link href="/" className="text-pink-500 font-bold flex items-center gap-2 hover:underline mb-4">
           <FaArrowLeft /> Change Box Type
         </Link>
-        <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
           Fill Your <span className="text-pink-500 uppercase">{selectedBox}</span>
         </h1>
-        <p className="text-gray-500 font-bold mt-2">Tap items to add them to your custom gift set.</p>
       </div>
 
-      {/* MAIN GRID */}
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
         {/* ITEM GRID */}
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((item) => {
-            const isSelected = selectedItems.find(
-              (i) => i.id === item.id || i.name.includes(item.name)
-            );
+            const isSelected = selectedItems.some((i) => i.id === item.id);
             return (
               <div
                 key={item.id}
                 onClick={(e) => toggleItem(item, e)}
-                className={`group relative cursor-pointer rounded-[2.5rem] overflow-hidden shadow-lg transition-all duration-300 active:scale-95 bg-white border-4 ${
-                  isSelected ? "border-pink-500 scale-105" : "border-white hover:border-pink-100"
+                className={`group relative cursor-pointer rounded-[2.5rem] overflow-hidden shadow-lg transition-all duration-300 bg-white border-4 ${
+                  isSelected ? "border-pink-500 scale-105" : "border-white hover:border-pink-200"
                 }`}
               >
-                <img src={item.image} alt={item.name} className="w-full h-48 object-cover" />
+                <div className="relative h-48 w-full">
+                   <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                </div>
                 <div className="p-4 text-center">
                   <p className="font-black text-gray-800 text-sm leading-tight">{item.name}</p>
                 </div>
                 {isSelected && (
-                  <div className="absolute top-4 right-4 bg-pink-500 text-white p-2 rounded-full shadow-lg animate-in zoom-in">
+                  <div className="absolute top-4 right-4 bg-pink-500 text-white p-2 rounded-full shadow-lg">
                     <FaCheckCircle size={20} />
                   </div>
                 )}
@@ -214,22 +195,32 @@ export default function BuildPage() {
           })}
         </div>
 
-        {/* SIDEBAR BASKET (DESKTOP) */}
+        {/* SIDEBAR BASKET */}
         <div className="hidden lg:block w-96 sticky top-10 self-start">
           <div className="bg-white rounded-[3rem] p-8 shadow-2xl border border-pink-100">
-            <div id="basket-header" className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-6">
               <FaShoppingBasket className="text-pink-500 text-2xl" />
               <h2 className="text-2xl font-black text-gray-900">Your Basket</h2>
             </div>
 
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 mb-6">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 mb-6 custom-scrollbar">
               {selectedItems.length === 0 ? (
-                <p className="text-gray-400 font-medium italic text-center py-10">Empty basket...</p>
+                <p className="text-gray-400 text-center py-10 italic">Empty basket...</p>
               ) : (
                 selectedItems.map((item) => (
-                  <div key={item.name} className="flex justify-between items-center bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
-                    <span className="font-bold text-gray-700 text-sm">{item.name}</span>
-                    <button onClick={() => toggleItem(item)} className="text-red-400 hover:text-red-600 transition-colors font-black">✕</button>
+                  <div key={item.id} className="bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
+                    <div className="flex justify-between items-center">
+                        <span className="font-bold text-gray-700 text-sm">{item.name}</span>
+                        <button onClick={() => toggleItem(item)} className="text-red-300 hover:text-red-500">✕</button>
+                    </div>
+                    {item.id === 13 && (
+                        <button 
+                            onClick={() => handleEditLetter(item.id)}
+                            className="mt-2 text-[10px] flex items-center gap-1 text-pink-500 font-black hover:underline uppercase"
+                        >
+                            <FaEdit /> Edit Letter
+                        </button>
+                    )}
                   </div>
                 ))
               )}
@@ -238,53 +229,78 @@ export default function BuildPage() {
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Special instructions (e.g., color preferences)"
-              className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-200 rounded-2xl p-4 text-sm font-bold text-black outline-none h-24 mb-6 transition-all"
+              placeholder="Special instructions..."
+              className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-200 rounded-2xl p-4 text-sm font-bold text-black outline-none h-24 mb-6"
             />
 
             <button
-              onClick={handleProceedToCheckout}
+              onClick={() => router.push("/Checkout")}
               disabled={selectedItems.length === 0}
-              className="w-full bg-pink-500 hover:bg-pink-600 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-pink-100 transition-all active:scale-95 disabled:opacity-30 flex items-center justify-center gap-2"
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white py-5 rounded-3xl font-black text-lg shadow-xl shadow-pink-200"
             >
-              Checkout <FaArrowRight />
+              Checkout <FaArrowRight className="inline ml-2" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* FLOWER SELECTION MODAL */}
-      {flowerModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-6">
-          <div className="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl animate-in zoom-in duration-300 text-center">
-            <div className="text-5xl mb-4">🌹</div>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">Flower Size</h2>
-            <p className="text-gray-500 font-bold mb-8 text-sm">Select the number of scented roses for your bouquet.</p>
+      {/* JOURNAL MODAL */}
+      {journalModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-6">
+          <div className="bg-white rounded-[3rem] p-8 md:p-12 max-w-xl w-full shadow-2xl animate-in zoom-in duration-300">
+            <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-500 text-3xl">
+                    <FaPenFancy />
+                </div>
+                <div>
+                    <h2 className="text-3xl font-black text-gray-900 leading-tight">Hand-written Letter</h2>
+                    <p className="text-gray-500 font-bold text-sm">Included with your Journal selection.</p>
+                </div>
+            </div>
             
-            <div className="space-y-4">
-              <button 
-                onClick={() => handleFlowerChoice(15)}
-                className="w-full bg-pink-50 hover:bg-pink-100 border-2 border-pink-200 p-6 rounded-3xl transition-all group"
-              >
-                <span className="block text-2xl font-black text-pink-600">15 Roses</span>
-                <span className="text-xs font-black text-pink-300 uppercase tracking-widest">Standard Luxe</span>
-              </button>
-
-              <button 
-                onClick={() => handleFlowerChoice(20)}
-                className="w-full bg-gray-900 hover:bg-black p-6 rounded-3xl transition-all group"
-              >
-                <span className="block text-2xl font-black text-white">20 Roses</span>
-                <span className="text-xs font-black text-gray-500 uppercase tracking-widest">Ultimate Bouquet</span>
-              </button>
+            <div className="relative">
+                <textarea 
+                    value={letterText}
+                    onChange={(e) => setLetterText(e.target.value)}
+                    placeholder="Dearest... I wanted to let you know that..."
+                    className="w-full h-64 bg-amber-50/30 border-2 border-amber-100 rounded-[2rem] p-8 text-gray-800 font-medium leading-relaxed italic placeholder:text-gray-300 outline-none focus:border-pink-200 transition-all resize-none shadow-inner"
+                />
+                <div className="absolute bottom-6 right-8 text-[10px] font-black text-amber-200 uppercase tracking-widest">Atelier Stationery</div>
             </div>
 
-            <button 
-              onClick={() => { setFlowerModalOpen(false); setTempFlowerItem(null); }}
-              className="mt-8 text-gray-400 font-black hover:text-red-500 transition-colors"
-            >
-              CANCEL
-            </button>
+            <div className="grid grid-cols-2 gap-4 mt-8">
+                <button 
+                    onClick={() => { setJournalModalOpen(false); setLetterText(""); }}
+                    className="py-5 rounded-2xl font-black text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest text-xs"
+                >
+                    Discard
+                </button>
+                <button 
+                    onClick={handleJournalSubmit}
+                    className="bg-pink-500 hover:bg-pink-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-pink-100 transition-all active:scale-95"
+                >
+                    Save to Journal
+                </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOWER MODAL */}
+      {flowerModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-6">
+           <div className="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl animate-in zoom-in duration-300 text-center">
+            <div className="text-5xl mb-4">🌹</div>
+            <h2 className="text-3xl font-black text-gray-900 mb-2">Flower Size</h2>
+            <div className="space-y-4 mt-6">
+              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 hover:bg-pink-100 border-2 border-pink-200 p-6 rounded-3xl transition-all">
+                <span className="block text-2xl font-black text-pink-600">15 Roses</span>
+              </button>
+              <button onClick={() => handleFlowerChoice(20)} className="w-full bg-gray-900 hover:bg-black p-6 rounded-3xl transition-all">
+                <span className="block text-2xl font-black text-white">20 Roses</span>
+              </button>
+            </div>
+            <button onClick={() => setFlowerModalOpen(false)} className="mt-8 text-gray-400 font-black hover:text-red-500">CANCEL</button>
           </div>
         </div>
       )}
@@ -292,15 +308,9 @@ export default function BuildPage() {
       {/* MOBILE BASKET TRIGGER */}
       <button
         ref={basketRef}
-        onClick={() => setBasketOpen(true)}
-        className="lg:hidden fixed bottom-8 right-8 bg-pink-500 text-white w-20 h-20 rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 active:scale-90 transition-all"
+        className="lg:hidden fixed bottom-8 right-8 bg-pink-500 text-white w-20 h-20 rounded-full shadow-2xl flex items-center justify-center z-50 transition-all"
       >
         <FaShoppingBasket size={30} />
-        {selectedItems.length > 0 && (
-          <span className="absolute -top-2 -right-2 bg-white text-pink-600 w-8 h-8 rounded-full flex items-center justify-center font-black border-4 border-pink-500 shadow-lg text-sm">
-            {selectedItems.length}
-          </span>
-        )}
       </button>
     </main>
   );

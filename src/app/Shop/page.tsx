@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FaGem, FaHeart, FaStar, FaArrowRight, FaCheckCircle, FaShoppingBag, FaTimes, FaBoxOpen } from "react-icons/fa";
-import Link from "next/link";
+import { FaGem, FaHeart, FaStar, FaArrowRight, FaShoppingBag, FaTimes, FaBoxOpen, FaCheckCircle, FaTools } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 // ... packages and boxTypes constants remain the same ...
@@ -54,28 +53,34 @@ const boxTypes = [
 export default function ShopPage() {
   const router = useRouter();
   const [showBoxModal, setShowBoxModal] = useState(false);
+  const [decisionModal, setDecisionModal] = useState<{ isOpen: boolean, pkgName: string | null }>({
+    isOpen: false,
+    pkgName: null
+  });
 
   const handleSelectPackage = (pkg: typeof packages[number]) => {
-    if (!pkg) return; // Ensure pkg is valid
-
-    // Use crypto.randomUUID() for better uniqueness
+    // 1. Prepare the data
     const packageAsSingleItem = [{
-      id: crypto.randomUUID(),
+      id: pkg.id, // Using the package ID
       name: pkg.name,
       image: "/items/package-item.jpg", 
+      price: pkg.price,
       isPackage: true 
     }];
 
+    // 2. Save to localStorage
     localStorage.setItem("selectedBoxSize", pkg.items.includes("Heart Box") ? "Heart Box" : "Luxury Box");
-    localStorage.setItem("selectedItems", JSON.stringify(packageAsSingleItem));
-    localStorage.setItem("loveLetter", `Ordered ${pkg.name} directly from Shop.`);
+    localStorage.setItem("orderItems", JSON.stringify(packageAsSingleItem));
+    localStorage.setItem("orderComment", `Ordered ${pkg.name} directly from Shop.`);
     
-    router.push("/Checkout");
+    // 3. Open Decision Modal instead of redirecting
+    setDecisionModal({ isOpen: true, pkgName: pkg.name });
   };
 
-  function startCustomBuild(name: string): void {
-    throw new Error("Function not implemented.");
-  }
+  const startCustomBuild = (name: string) => {
+    localStorage.setItem("selectedBoxSize", name);
+    router.push("/Build");
+  };
 
   return (
     <main className="min-h-screen bg-[#fdf2f3] pb-20 relative">
@@ -85,7 +90,7 @@ export default function ShopPage() {
           Ready-to-Ship <br/><span className="text-pink-500 italic font-light capitalize tracking-normal text-4xl md:text-6xl">Luxuries</span>
         </h1>
         <p className="text-gray-500 max-w-xl mx-auto font-black uppercase text-[10px] tracking-[0.3em] leading-relaxed">
-          Curated by our designers. Choose a package to proceed to checkout instantly.
+          Curated by our designers. Choose a package to add to your cart.
         </p>
       </section>
 
@@ -119,32 +124,57 @@ export default function ShopPage() {
 
             <div className="p-10 pt-0 mt-auto">
               <button onClick={() => handleSelectPackage(pkg)} className="w-full bg-gray-900 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-pink-600 transition-all shadow-xl active:scale-95">
-                INSTANT PURCHASE <FaArrowRight size={12} />
+                SELECT PACKAGE <FaArrowRight size={12} />
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* FOOTER CTA */}
-      <div className="max-w-4xl mx-auto mt-24 px-6 text-center">
-        <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-pink-100 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-300 via-purple-300 to-pink-300" />
-          <FaShoppingBag className="text-pink-500 text-5xl mx-auto mb-6" />
-          <h3 className="text-3xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Bespoke Curation?</h3>
-          <p className="text-gray-400 font-bold mb-8 uppercase text-xs tracking-widest">Hand-pick every single item for a truly personal gift.</p>
-          <button 
-            onClick={() => setShowBoxModal(true)}
-            className="inline-block bg-pink-500 text-white px-12 py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-pink-200 shadow-2xl hover:bg-gray-900 transition-all"
-          >
-            Enter The Atelier
-          </button>
-        </div>
-      </div>
+      {/* DECISION MODAL */}
+      {decisionModal.isOpen && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-xl" onClick={() => setDecisionModal({ isOpen: false, pkgName: null })} />
+          
+          <div className="bg-white w-full max-w-md rounded-[3.5rem] p-10 relative z-10 shadow-2xl border border-white text-center animate-in zoom-in duration-300">
+            <div className="w-20 h-20 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+              <FaCheckCircle />
+            </div>
+            
+            <h2 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tighter">Package Selected!</h2>
+            <p className="text-gray-500 text-sm font-bold mb-8">
+              <span className="text-pink-500">{decisionModal.pkgName}</span> has been prepared. What would you like to do next?
+            </p>
 
-      {/* BOX SELECTION MODAL */}
+            <div className="space-y-3">
+              <button 
+                onClick={() => router.push("/Checkout")}
+                className="w-full bg-gray-900 text-white py-6 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-pink-600 transition-all flex items-center justify-center gap-3"
+              >
+                Go to Checkout <FaArrowRight />
+              </button>
+              
+              <button 
+                onClick={() => setShowBoxModal(true)}
+                className="w-full bg-pink-50 text-pink-600 py-6 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-pink-100 transition-all flex items-center justify-center gap-3"
+              >
+                Keep Building <FaTools />
+              </button>
+              
+              <button 
+                onClick={() => setDecisionModal({ isOpen: false, pkgName: null })}
+                className="w-full text-gray-400 py-4 font-black text-[9px] uppercase tracking-widest hover:text-red-500 transition-colors"
+              >
+                Cancel & Change
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BOX SELECTION MODAL (Atelier) */}
       {showBoxModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[400] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-xl" onClick={() => setShowBoxModal(false)} />
           
           <div className="bg-white w-full max-w-lg rounded-[4rem] p-10 relative z-10 shadow-2xl border border-white">

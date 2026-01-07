@@ -34,7 +34,7 @@ const items: Item[] = [
   { id: 16, name: "Cluster Lashes", image: "/items/cluster.jpg" },
   { id: 17, name: "Customized Charms", image: "/items/charms.jpg" },
   { id: 18, name: "Selfie Stick stand", image: "/items/Selfiestick.jpg" },
-  { id: 19, name: "Wall LED light", image: "/items/wall-led.jpg" },
+  { id: 19, name: "Wall LED light", image: "/items/ledlight.jpg" },
   { id: 20, name: "Face Mask", image: "/items/facemask.jpg" },
   { id: 21, name: "Bloomer Shorts", image: "/items/shorts.jpg" },
   { id: 22, name: "Money Box", image: "/items/moneybox.jpg" },

@@ -8,12 +8,13 @@ import {
   FaArrowRight, 
   FaEdit, 
   FaPenFancy, 
-  FaTimes 
+  FaTimes,
+  FaCoins 
 } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-type Item = { id: number; name: string; image: string; letter?: string };
+type Item = { id: number; name: string; image: string; letter?: string; denomination?: number; amount?: number };
 
 const items: Item[] = [
   { id: 1, name: "Branded Purse", image: "/items/purse.jpg" },
@@ -49,11 +50,16 @@ export default function BuildPage() {
   const [comment, setComment] = useState<string>("");
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Modal States
   const [isBasketOpen, setIsBasketOpen] = useState(false);
   const [flowerModalOpen, setFlowerModalOpen] = useState(false);
   const [journalModalOpen, setJournalModalOpen] = useState(false);
+  const [moneyModalOpen, setMoneyModalOpen] = useState(false);
+
+  // Temporary Data Holders
   const [tempFlowerItem, setTempFlowerItem] = useState<Item | null>(null);
   const [letterText, setLetterText] = useState("");
+  const [moneyConfig, setMoneyConfig] = useState({ denomination: 100, amount: 10000 });
 
   useEffect(() => {
     const savedItems = localStorage.getItem("orderItems");
@@ -78,8 +84,12 @@ export default function BuildPage() {
       setSelectedItems(selectedItems.filter((i) => i.id !== item.id));
       return;
     }
+    
+    // Logic Triggers for Specific Items
     if (item.id === 4) { setTempFlowerItem(item); setFlowerModalOpen(true); return; }
     if (item.id === 13) { setJournalModalOpen(true); return; }
+    if (item.id === 22) { setMoneyModalOpen(true); return; }
+
     processAnimation(e);
     setSelectedItems((prev) => [...prev, item]);
   };
@@ -91,6 +101,20 @@ export default function BuildPage() {
     }
     setJournalModalOpen(false);
     setLetterText("");
+  };
+
+  const handleMoneySubmit = () => {
+    const moneyItem = items.find(i => i.id === 22);
+    if (moneyItem) {
+      setSelectedItems(prev => [...prev, { 
+        ...moneyItem, 
+        name: `Money Box (₦${moneyConfig.amount.toLocaleString()})`,
+        letter: `Denomination: ₦${moneyConfig.denomination}`, // Using letter field to store details for simplicity
+        amount: moneyConfig.amount,
+        denomination: moneyConfig.denomination
+      }]);
+    }
+    setMoneyModalOpen(false);
   };
 
   const handleEditLetter = (id: number) => {
@@ -158,7 +182,7 @@ export default function BuildPage() {
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
-        {/* ITEM GRID - 2 columns on mobile, Portrait style */}
+        {/* ITEM GRID */}
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           {items.map((item) => {
             const isSelected = selectedItems.some((i) => i.id === item.id);
@@ -227,19 +251,56 @@ export default function BuildPage() {
         </div>
       )}
 
-      {/* FLOATING MOBILE BASKET */}
-      <button
-        ref={basketRef}
-        onClick={() => setIsBasketOpen(true)}
-        className="lg:hidden fixed bottom-6 right-6 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-all border-4 border-white"
-      >
-        <FaShoppingBasket size={20} />
-        {selectedItems.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-black text-[10px]">
-            {selectedItems.length}
-          </span>
-        )}
-      </button>
+      {/* MONEY BOX MODAL */}
+      {moneyModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
+            <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-pink-500 text-2xl">
+                    <FaCoins />
+                </div>
+                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Setup Money Box</h2>
+            </div>
+            
+            <div className="mb-6">
+                <label className="text-[10px] font-black uppercase text-pink-500 tracking-widest mb-3 block">Pick Denomination</label>
+                <div className="grid grid-cols-4 gap-2">
+                    {[100, 200, 500, 1000].map((d) => (
+                        <button 
+                            key={d}
+                            onClick={() => setMoneyConfig({ ...moneyConfig, denomination: d })}
+                            className={`py-3 rounded-xl font-bold text-xs transition-all ${moneyConfig.denomination === d ? 'bg-pink-500 text-white shadow-lg shadow-pink-200' : 'bg-gray-50 text-gray-400 hover:bg-pink-50'}`}
+                        >
+                            {d}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="mb-8">
+                <div className="flex justify-between items-end mb-2">
+                    <label className="text-[10px] font-black uppercase text-pink-500 tracking-widest block">Total Amount</label>
+                    <span className="text-2xl font-black text-gray-900">₦{moneyConfig.amount.toLocaleString()}</span>
+                </div>
+                <input 
+                    type="range" min="10000" max="150000" step="5000"
+                    value={moneyConfig.amount}
+                    onChange={(e) => setMoneyConfig({ ...moneyConfig, amount: Number(e.target.value) })}
+                    className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                />
+                <div className="flex justify-between text-[9px] font-bold text-gray-400 mt-2 uppercase tracking-tighter">
+                    <span>₦10,000</span>
+                    <span>₦150,000</span>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setMoneyModalOpen(false)} className="py-4 font-black text-gray-400 uppercase tracking-widest text-[10px]">Discard</button>
+                <button onClick={handleMoneySubmit} className="bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Add Box</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* JOURNAL MODAL */}
       {journalModalOpen && (
@@ -283,6 +344,20 @@ export default function BuildPage() {
           </div>
         </div>
       )}
+
+      {/* FLOATING MOBILE BASKET */}
+      <button
+        ref={basketRef}
+        onClick={() => setIsBasketOpen(true)}
+        className="lg:hidden fixed bottom-6 right-6 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-all border-4 border-white"
+      >
+        <FaShoppingBasket size={20} />
+        {selectedItems.length > 0 && (
+          <span className="absolute -top-1 -right-1 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-black text-[10px]">
+            {selectedItems.length}
+          </span>
+        )}
+      </button>
     </main>
   );
 }
@@ -301,9 +376,9 @@ function BasketUI({ selectedItems, toggleItem, handleEditLetter, comment, setCom
                         <button onClick={() => toggleItem(item)} className="text-red-300 hover:text-red-500 p-1">✕</button>
                     </div>
                     {item.letter && (
-                        <button onClick={() => handleEditLetter(item.id)} className="mt-2 text-[9px] flex items-center gap-1 text-pink-500 font-black uppercase tracking-widest hover:underline">
-                            <FaEdit /> Edit Letter
-                        </button>
+                        <div className="mt-2 text-[9px] flex items-center gap-1 text-pink-500 font-black uppercase tracking-widest italic">
+                            {item.letter}
+                        </div>
                     )}
                   </div>
                 ))

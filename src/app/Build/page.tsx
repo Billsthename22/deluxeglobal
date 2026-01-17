@@ -39,6 +39,7 @@ const items: Item[] = [
   { id: 20, name: "Face Mask", image: "/items/facemask.jpg" },
   { id: 21, name: "Bloomer Shorts", image: "/items/shorts.jpg" },
   { id: 22, name: "Money Box", image: "/items/moneybox.jpg" },
+  { id: 23, name: "Love Letter", image: "/items/loveletter.jpg" }, // New Item added
 ];
 
 export default function BuildPage() {
@@ -53,7 +54,7 @@ export default function BuildPage() {
   // Modal States
   const [isBasketOpen, setIsBasketOpen] = useState(false);
   const [flowerModalOpen, setFlowerModalOpen] = useState(false);
-  const [journalModalOpen, setJournalModalOpen] = useState(false);
+  const [loveLetterModalOpen, setLoveLetterModalOpen] = useState(false); // Renamed from journalModalOpen
   const [moneyModalOpen, setMoneyModalOpen] = useState(false);
 
   // Temporary Data Holders
@@ -85,21 +86,21 @@ export default function BuildPage() {
       return;
     }
     
-    // Logic Triggers for Specific Items
+    // Logic Triggers
     if (item.id === 4) { setTempFlowerItem(item); setFlowerModalOpen(true); return; }
-    if (item.id === 13) { setJournalModalOpen(true); return; }
+    if (item.id === 23) { setLoveLetterModalOpen(true); return; } // Now triggers on Love Letter instead of Journal
     if (item.id === 22) { setMoneyModalOpen(true); return; }
 
     processAnimation(e);
     setSelectedItems((prev) => [...prev, item]);
   };
 
-  const handleJournalSubmit = () => {
-    const journalItem = items.find(i => i.id === 13);
-    if (journalItem) {
-      setSelectedItems(prev => [...prev, { ...journalItem, letter: letterText }]);
+  const handleLoveLetterSubmit = () => {
+    const letterItem = items.find(i => i.id === 23);
+    if (letterItem) {
+      setSelectedItems(prev => [...prev, { ...letterItem, letter: letterText }]);
     }
-    setJournalModalOpen(false);
+    setLoveLetterModalOpen(false);
     setLetterText("");
   };
 
@@ -109,7 +110,7 @@ export default function BuildPage() {
       setSelectedItems(prev => [...prev, { 
         ...moneyItem, 
         name: `Money Box (₦${moneyConfig.amount.toLocaleString()})`,
-        letter: `Denomination: ₦${moneyConfig.denomination}`, // Using letter field to store details for simplicity
+        letter: `Denomination: ₦${moneyConfig.denomination}`,
         amount: moneyConfig.amount,
         denomination: moneyConfig.denomination
       }]);
@@ -122,7 +123,7 @@ export default function BuildPage() {
     if (itemToEdit) {
       setLetterText(itemToEdit.letter || "");
       setSelectedItems(prev => prev.filter(i => i.id !== id));
-      setJournalModalOpen(true);
+      setLoveLetterModalOpen(true);
     }
   };
 
@@ -154,7 +155,7 @@ export default function BuildPage() {
   return (
     <main className="min-h-screen bg-[#fafafa] p-4 lg:p-12 relative overflow-x-hidden">
       
-      {/* MINIMAL STICKY HEADER */}
+      {/* HEADER */}
       <div className="fixed top-0 left-0 w-full z-[100] bg-white/80 backdrop-blur-md border-b border-pink-100 p-4 lg:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
             <span className="text-[10px] font-black uppercase text-pink-500 tracking-widest">
@@ -170,7 +171,6 @@ export default function BuildPage() {
         </div>
       </div>
 
-      {/* HEADER CONTENT */}
       <div className="max-w-7xl mx-auto mb-8 mt-16 lg:mt-20">
         <Link href="/" className="text-pink-500 font-black uppercase text-[9px] tracking-[0.2em] flex items-center gap-2 mb-2">
           <FaArrowLeft /> Change Box
@@ -182,7 +182,6 @@ export default function BuildPage() {
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
-        {/* ITEM GRID */}
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           {items.map((item) => {
             const isSelected = selectedItems.some((i) => i.id === item.id);
@@ -214,7 +213,6 @@ export default function BuildPage() {
           })}
         </div>
 
-        {/* DESKTOP SIDEBAR */}
         <div className="hidden lg:block w-96 sticky top-28 self-start">
           <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-pink-100">
              <BasketUI 
@@ -229,24 +227,26 @@ export default function BuildPage() {
         </div>
       </div>
 
-      {/* MOBILE BASKET DRAWER */}
-      {isBasketOpen && (
-        <div className="fixed inset-0 z-[500] lg:hidden">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsBasketOpen(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[3rem] p-8 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto">
-            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
-            <div className="flex justify-between items-center mb-6 px-2">
-              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Your Bag</h2>
-              <button onClick={() => setIsBasketOpen(false)} className="text-gray-400 p-2"><FaTimes size={20}/></button>
+      {/* LOVE LETTER MODAL */}
+      {loveLetterModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in duration-300">
+            <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-pink-500 text-2xl">
+                    <FaPenFancy />
+                </div>
+                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Compose Love Letter</h2>
             </div>
-            <BasketUI 
-                selectedItems={selectedItems} 
-                toggleItem={toggleItem} 
-                handleEditLetter={handleEditLetter}
-                comment={comment}
-                setComment={setComment}
-                onCheckout={() => router.push("/Checkout")}
-             />
+            <textarea 
+                value={letterText}
+                onChange={(e) => setLetterText(e.target.value)}
+                placeholder="Write your beautiful message here..."
+                className="w-full h-48 bg-pink-50/10 border-2 border-pink-100/50 rounded-2xl p-6 text-gray-800 font-medium italic outline-none focus:border-pink-200 transition-all resize-none shadow-inner"
+            />
+            <div className="grid grid-cols-2 gap-3 mt-6">
+                <button onClick={() => { setLoveLetterModalOpen(false); setLetterText(""); }} className="py-4 font-black text-gray-400 uppercase tracking-widest text-[10px]">Discard</button>
+                <button onClick={handleLoveLetterSubmit} className="bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Save Letter</button>
+            </div>
           </div>
         </div>
       )}
@@ -261,66 +261,24 @@ export default function BuildPage() {
                 </div>
                 <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Setup Money Box</h2>
             </div>
-            
             <div className="mb-6">
                 <label className="text-[10px] font-black uppercase text-pink-500 tracking-widest mb-3 block">Pick Denomination</label>
                 <div className="grid grid-cols-4 gap-2">
                     {[100, 200, 500, 1000].map((d) => (
-                        <button 
-                            key={d}
-                            onClick={() => setMoneyConfig({ ...moneyConfig, denomination: d })}
-                            className={`py-3 rounded-xl font-bold text-xs transition-all ${moneyConfig.denomination === d ? 'bg-pink-500 text-white shadow-lg shadow-pink-200' : 'bg-gray-50 text-gray-400 hover:bg-pink-50'}`}
-                        >
-                            {d}
-                        </button>
+                        <button key={d} onClick={() => setMoneyConfig({ ...moneyConfig, denomination: d })} className={`py-3 rounded-xl font-bold text-xs transition-all ${moneyConfig.denomination === d ? 'bg-pink-500 text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-pink-50'}`}>{d}</button>
                     ))}
                 </div>
             </div>
-
             <div className="mb-8">
                 <div className="flex justify-between items-end mb-2">
                     <label className="text-[10px] font-black uppercase text-pink-500 tracking-widest block">Total Amount</label>
                     <span className="text-2xl font-black text-gray-900">₦{moneyConfig.amount.toLocaleString()}</span>
                 </div>
-                <input 
-                    type="range" min="10000" max="150000" step="5000"
-                    value={moneyConfig.amount}
-                    onChange={(e) => setMoneyConfig({ ...moneyConfig, amount: Number(e.target.value) })}
-                    className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-pink-500"
-                />
-                <div className="flex justify-between text-[9px] font-bold text-gray-400 mt-2 uppercase tracking-tighter">
-                    <span>₦10,000</span>
-                    <span>₦150,000</span>
-                </div>
+                <input type="range" min="10000" max="150000" step="5000" value={moneyConfig.amount} onChange={(e) => setMoneyConfig({ ...moneyConfig, amount: Number(e.target.value) })} className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-pink-500" />
             </div>
-
             <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => setMoneyModalOpen(false)} className="py-4 font-black text-gray-400 uppercase tracking-widest text-[10px]">Discard</button>
                 <button onClick={handleMoneySubmit} className="bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Add Box</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* JOURNAL MODAL */}
-      {journalModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-pink-500 text-2xl">
-                    <FaPenFancy />
-                </div>
-                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Write Letter</h2>
-            </div>
-            <textarea 
-                value={letterText}
-                onChange={(e) => setLetterText(e.target.value)}
-                placeholder="Include a message in your journal..."
-                className="w-full h-48 bg-amber-50/20 border-2 border-amber-100/50 rounded-2xl p-6 text-gray-800 font-medium italic outline-none focus:border-pink-200 transition-all resize-none shadow-inner"
-            />
-            <div className="grid grid-cols-2 gap-3 mt-6">
-                <button onClick={() => { setJournalModalOpen(false); setLetterText(""); }} className="py-4 font-black text-gray-400 uppercase tracking-widest text-[10px]">Discard</button>
-                <button onClick={handleJournalSubmit} className="bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Save</button>
             </div>
           </div>
         </div>
@@ -333,31 +291,34 @@ export default function BuildPage() {
             <span className="text-5xl block mb-4">🌹</span>
             <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-6">Bouquet Size</h2>
             <div className="space-y-3">
-              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 p-5 rounded-2xl transition-all">
-                <span className="block text-xl font-black text-pink-600">15 ROSES</span>
-              </button>
-              <button onClick={() => handleFlowerChoice(20)} className="w-full bg-gray-900 hover:bg-black p-5 rounded-2xl transition-all">
-                <span className="block text-xl font-black text-white">20 ROSES</span>
-              </button>
+              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 p-5 rounded-2xl transition-all"><span className="block text-xl font-black text-pink-600">15 ROSES</span></button>
+              <button onClick={() => handleFlowerChoice(20)} className="w-full bg-gray-900 hover:bg-black p-5 rounded-2xl transition-all"><span className="block text-xl font-black text-white">20 ROSES</span></button>
             </div>
             <button onClick={() => setFlowerModalOpen(false)} className="mt-6 text-gray-400 font-black uppercase tracking-widest text-[10px]">Cancel</button>
           </div>
         </div>
       )}
 
-      {/* FLOATING MOBILE BASKET */}
-      <button
-        ref={basketRef}
-        onClick={() => setIsBasketOpen(true)}
-        className="lg:hidden fixed bottom-6 right-6 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-all border-4 border-white"
-      >
+      {/* MOBILE BASKET BUTTON */}
+      <button ref={basketRef} onClick={() => setIsBasketOpen(true)} className="lg:hidden fixed bottom-6 right-6 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-50 border-4 border-white">
         <FaShoppingBasket size={20} />
-        {selectedItems.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-black text-[10px]">
-            {selectedItems.length}
-          </span>
-        )}
+        {selectedItems.length > 0 && <span className="absolute -top-1 -right-1 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-black text-[10px]">{selectedItems.length}</span>}
       </button>
+
+      {/* MOBILE DRAWER */}
+      {isBasketOpen && (
+        <div className="fixed inset-0 z-[500] lg:hidden">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsBasketOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[3rem] p-8 max-h-[85vh] overflow-y-auto">
+            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
+            <div className="flex justify-between items-center mb-6 px-2">
+              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Your Bag</h2>
+              <button onClick={() => setIsBasketOpen(false)} className="text-gray-400 p-2"><FaTimes size={20}/></button>
+            </div>
+            <BasketUI selectedItems={selectedItems} toggleItem={toggleItem} handleEditLetter={handleEditLetter} comment={comment} setComment={setComment} onCheckout={() => router.push("/Checkout")} />
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -373,10 +334,15 @@ function BasketUI({ selectedItems, toggleItem, handleEditLetter, comment, setCom
                   <div key={item.id} className="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100">
                     <div className="flex justify-between items-center">
                         <span className="font-black text-gray-700 text-[10px] uppercase tracking-tight">{item.name}</span>
-                        <button onClick={() => toggleItem(item)} className="text-red-300 hover:text-red-500 p-1">✕</button>
+                        <div className="flex gap-2">
+                            {item.letter && item.id === 23 && (
+                                <button onClick={() => handleEditLetter(item.id)} className="text-pink-400 hover:text-pink-600 p-1"><FaEdit size={12}/></button>
+                            )}
+                            <button onClick={() => toggleItem(item)} className="text-red-300 hover:text-red-500 p-1">✕</button>
+                        </div>
                     </div>
                     {item.letter && (
-                        <div className="mt-2 text-[9px] flex items-center gap-1 text-pink-500 font-black uppercase tracking-widest italic">
+                        <div className="mt-2 text-[9px] text-pink-500 font-black uppercase tracking-widest italic line-clamp-1">
                             {item.letter}
                         </div>
                     )}
@@ -384,17 +350,8 @@ function BasketUI({ selectedItems, toggleItem, handleEditLetter, comment, setCom
                 ))
               )}
             </div>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Notes for the atelier..."
-              className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl p-4 text-[11px] font-bold text-gray-900 outline-none h-24 mb-6 transition-all"
-            />
-            <button
-              onClick={onCheckout}
-              disabled={selectedItems.length === 0}
-              className="w-full bg-gray-900 text-white py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-xl disabled:opacity-20 flex items-center justify-center gap-2"
-            >
+            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Notes for the atelier..." className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-100 rounded-2xl p-4 text-[11px] font-bold text-gray-900 outline-none h-24 mb-6 transition-all" />
+            <button onClick={onCheckout} disabled={selectedItems.length === 0} className="w-full bg-gray-900 text-white py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-xl disabled:opacity-20 flex items-center justify-center gap-2">
               Checkout <FaArrowRight size={12}/>
             </button>
         </>

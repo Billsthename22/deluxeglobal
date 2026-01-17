@@ -32,7 +32,7 @@ const items: Item[] = [
   { id: 13, name: "Journal", image: "/items/journal.jpg" },
   { id: 14, name: "Perfume 3-in-1", image: "/items/perfume.jpg" },
   { id: 15, name: "Influencer LED", image: "/items/led.jpg" },
-  { id: 16, name: "Cluster Lashes", image: "/items/cluster.jpg" },
+  { id: 16, name: "Cluster Lashes", image: "/items/clusterlash.jpg" },
   { id: 17, name: "Customized Charms", image: "/items/charms.jpg" },
   { id: 18, name: "Selfie Stick stand", image: "/items/Selfiestick.jpg" },
   { id: 19, name: "Wall LED light", image: "/items/ledlight.jpg" },

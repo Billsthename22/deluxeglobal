@@ -12,6 +12,8 @@ import {
   FaCoins 
 } from "react-icons/fa";
 import Link from "next/link";
+import { Header, Footer } from "@/components/store";
+import { COLLECTIONS } from "@/lib/collections";
 import { useRouter } from "next/navigation";
 
 type Item = { id: number; name: string; image: string; letter?: string; denomination?: number; amount?: number };
@@ -67,7 +69,9 @@ export default function BuildPage() {
     const savedBox = localStorage.getItem("selectedBoxSize");
     const savedComment = localStorage.getItem("orderComment");
     if (savedItems) setSelectedItems(JSON.parse(savedItems));
-    if (savedBox) setSelectedBox(savedBox);
+    const isProductOrder = COLLECTIONS.some(collection => collection.label === savedBox)
+      || savedBox === "Ready-made gift" || savedBox === "Deluxe selection";
+    if (savedBox && !isProductOrder) setSelectedBox(savedBox);
     if (savedComment) setComment(savedComment);
     setIsLoaded(true);
   }, []);
@@ -75,9 +79,10 @@ export default function BuildPage() {
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem("orderItems", JSON.stringify(selectedItems));
+      localStorage.setItem("selectedBoxSize", selectedBox);
       localStorage.setItem("orderComment", comment);
     }
-  }, [selectedItems, comment, isLoaded]);
+  }, [selectedItems, selectedBox, comment, isLoaded]);
 
   const toggleItem = (item: Item, e?: React.MouseEvent) => {
     const exists = selectedItems.find((i) => i.id === item.id);
@@ -153,18 +158,20 @@ export default function BuildPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#fafafa] p-4 lg:p-12 relative overflow-x-hidden">
+    <>
+      <Header />
+    <main id="main-content" className="min-h-screen bg-[#faf7f2] p-4 lg:p-12 relative overflow-x-hidden">
       
       {/* HEADER */}
-      <div className="fixed top-0 left-0 w-full z-[100] bg-white/80 backdrop-blur-md border-b border-pink-100 p-4 lg:px-12">
+      <div className="sticky top-0 left-0 w-full z-[100] bg-white/80 backdrop-blur-md border-b border-pink-100 p-4 lg:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase text-pink-500 tracking-widest">
+            <span className="text-[10px] font-black uppercase text-[#682f3e] tracking-widest">
                 The Atelier Box
             </span>
             <button 
                 onClick={() => router.push("/Checkout")}
                 disabled={selectedItems.length === 0}
-                className="bg-gray-900 text-white px-6 py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-pink-600 transition-colors disabled:opacity-20"
+                className="bg-gray-900 text-white px-6 py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#4d202c] transition-colors disabled:opacity-20"
             >
                 Checkout <FaArrowRight size={10} />
             </button>
@@ -172,12 +179,12 @@ export default function BuildPage() {
       </div>
 
       <div className="max-w-7xl mx-auto mb-8 mt-16 lg:mt-20">
-        <Link href="/" className="text-pink-500 font-black uppercase text-[9px] tracking-[0.2em] flex items-center gap-2 mb-2">
+        <Link href="/" className="text-[#682f3e] font-black uppercase text-[9px] tracking-[0.2em] flex items-center gap-2 mb-2">
           <FaArrowLeft /> Change Box
         </Link>
         <h1 className="text-3xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase leading-tight">
           Fill Your <br/>
-          <span className="text-pink-500 italic font-light capitalize tracking-normal">{selectedBox}</span>
+          <span className="text-[#682f3e] italic font-light capitalize tracking-normal">{selectedBox}</span>
         </h1>
       </div>
 
@@ -190,14 +197,14 @@ export default function BuildPage() {
                 key={item.id}
                 onClick={(e) => toggleItem(item, e)}
                 className={`group relative cursor-pointer rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden transition-all duration-300 bg-white border ${
-                  isSelected ? "border-pink-500 ring-2 ring-pink-500/20" : "border-gray-100 hover:border-pink-200"
+                  isSelected ? "border-[#682f3e] ring-2 ring-pink-500/20" : "border-gray-100 hover:border-pink-200"
                 }`}
               >
                 <div className="relative aspect-[4/5] w-full overflow-hidden">
                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                    {isSelected && (
-                      <div className="absolute inset-0 bg-pink-500/10 flex items-center justify-center backdrop-blur-[1px]">
-                         <div className="bg-white text-pink-500 p-2 rounded-full shadow-lg scale-110">
+                      <div className="absolute inset-0 bg-[#682f3e]/10 flex items-center justify-center backdrop-blur-[1px]">
+                         <div className="bg-white text-[#682f3e] p-2 rounded-full shadow-lg scale-110">
                             <FaCheckCircle size={16} />
                          </div>
                       </div>
@@ -232,7 +239,7 @@ export default function BuildPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in duration-300">
             <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-pink-500 text-2xl">
+                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-[#682f3e] text-2xl">
                     <FaPenFancy />
                 </div>
                 <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Compose Love Letter</h2>
@@ -245,7 +252,7 @@ export default function BuildPage() {
             />
             <div className="grid grid-cols-2 gap-3 mt-6">
                 <button onClick={() => { setLoveLetterModalOpen(false); setLetterText(""); }} className="py-4 font-black text-gray-400 uppercase tracking-widest text-[10px]">Discard</button>
-                <button onClick={handleLoveLetterSubmit} className="bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Save Letter</button>
+                <button onClick={handleLoveLetterSubmit} className="bg-[#682f3e] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Save Letter</button>
             </div>
           </div>
         </div>
@@ -256,29 +263,29 @@ export default function BuildPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
             <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-pink-500 text-2xl">
+                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center text-[#682f3e] text-2xl">
                     <FaCoins />
                 </div>
                 <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Setup Money Box</h2>
             </div>
             <div className="mb-6">
-                <label className="text-[10px] font-black uppercase text-pink-500 tracking-widest mb-3 block">Pick Denomination</label>
+                <label className="text-[10px] font-black uppercase text-[#682f3e] tracking-widest mb-3 block">Pick Denomination</label>
                 <div className="grid grid-cols-4 gap-2">
                     {[100, 200, 500, 1000].map((d) => (
-                        <button key={d} onClick={() => setMoneyConfig({ ...moneyConfig, denomination: d })} className={`py-3 rounded-xl font-bold text-xs transition-all ${moneyConfig.denomination === d ? 'bg-pink-500 text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-pink-50'}`}>{d}</button>
+                        <button key={d} onClick={() => setMoneyConfig({ ...moneyConfig, denomination: d })} className={`py-3 rounded-xl font-bold text-xs transition-all ${moneyConfig.denomination === d ? 'bg-[#682f3e] text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-pink-50'}`}>{d}</button>
                     ))}
                 </div>
             </div>
             <div className="mb-8">
                 <div className="flex justify-between items-end mb-2">
-                    <label className="text-[10px] font-black uppercase text-pink-500 tracking-widest block">Total Amount</label>
+                    <label className="text-[10px] font-black uppercase text-[#682f3e] tracking-widest block">Total Amount</label>
                     <span className="text-2xl font-black text-gray-900">₦{moneyConfig.amount.toLocaleString()}</span>
                 </div>
                 <input type="range" min="10000" max="150000" step="5000" value={moneyConfig.amount} onChange={(e) => setMoneyConfig({ ...moneyConfig, amount: Number(e.target.value) })} className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-pink-500" />
             </div>
             <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => setMoneyModalOpen(false)} className="py-4 font-black text-gray-400 uppercase tracking-widest text-[10px]">Discard</button>
-                <button onClick={handleMoneySubmit} className="bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Add Box</button>
+                <button onClick={handleMoneySubmit} className="bg-[#682f3e] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-pink-100">Add Box</button>
             </div>
           </div>
         </div>
@@ -291,7 +298,7 @@ export default function BuildPage() {
             <span className="text-5xl block mb-4">🌹</span>
             <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight mb-6">Bouquet Size</h2>
             <div className="space-y-3">
-              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 p-5 rounded-2xl transition-all"><span className="block text-xl font-black text-pink-600">15 ROSES</span></button>
+              <button onClick={() => handleFlowerChoice(15)} className="w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 p-5 rounded-2xl transition-all"><span className="block text-xl font-black text-[#682f3e]">15 ROSES</span></button>
               <button onClick={() => handleFlowerChoice(20)} className="w-full bg-gray-900 hover:bg-black p-5 rounded-2xl transition-all"><span className="block text-xl font-black text-white">20 ROSES</span></button>
             </div>
             <button onClick={() => setFlowerModalOpen(false)} className="mt-6 text-gray-400 font-black uppercase tracking-widest text-[10px]">Cancel</button>
@@ -302,7 +309,7 @@ export default function BuildPage() {
       {/* MOBILE BASKET BUTTON */}
       <button ref={basketRef} onClick={() => setIsBasketOpen(true)} className="lg:hidden fixed bottom-6 right-6 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-50 border-4 border-white">
         <FaShoppingBasket size={20} />
-        {selectedItems.length > 0 && <span className="absolute -top-1 -right-1 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-black text-[10px]">{selectedItems.length}</span>}
+        {selectedItems.length > 0 && <span className="absolute -top-1 -right-1 bg-[#682f3e] text-white w-6 h-6 rounded-full flex items-center justify-center font-black text-[10px]">{selectedItems.length}</span>}
       </button>
 
       {/* MOBILE DRAWER */}
@@ -320,6 +327,8 @@ export default function BuildPage() {
         </div>
       )}
     </main>
+    <Footer />
+    </>
   );
 }
 
@@ -336,13 +345,13 @@ function BasketUI({ selectedItems, toggleItem, handleEditLetter, comment, setCom
                         <span className="font-black text-gray-700 text-[10px] uppercase tracking-tight">{item.name}</span>
                         <div className="flex gap-2">
                             {item.letter && item.id === 23 && (
-                                <button onClick={() => handleEditLetter(item.id)} className="text-pink-400 hover:text-pink-600 p-1"><FaEdit size={12}/></button>
+                                <button onClick={() => handleEditLetter(item.id)} className="text-pink-400 hover:text-[#682f3e] p-1"><FaEdit size={12}/></button>
                             )}
                             <button onClick={() => toggleItem(item)} className="text-red-300 hover:text-red-500 p-1">✕</button>
                         </div>
                     </div>
                     {item.letter && (
-                        <div className="mt-2 text-[9px] text-pink-500 font-black uppercase tracking-widest italic line-clamp-1">
+                        <div className="mt-2 text-[9px] text-[#682f3e] font-black uppercase tracking-widest italic line-clamp-1">
                             {item.letter}
                         </div>
                     )}

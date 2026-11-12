@@ -1,21 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Deluxe Global | Luxury Gifts",
-  description: "Curated gift sets and personalized gift baskets for every occasion.",
+  title: "Deluxe Global | Perfume Oils, Surprise Gifts & Girly Essentials",
+  description: "Your little world of Deluxe: undiluted perfume oils, thoughtful surprise gifts, and beauty, accessories, and everyday girly essentials. Shop the collections or build a personal gift.",
 };
 
 export default function RootLayout({
@@ -26,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="antialiased"
       >
         {children}
         <Analytics />
